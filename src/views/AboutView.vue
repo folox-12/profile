@@ -1,5 +1,49 @@
+<script setup>
+import { computed } from 'vue';
+import { useRouteFunction } from '@/composable/useRouteFunction';
+import { useI18n } from 'vue-i18n';
+import VParagraph from '@/components/VParagraph.vue';
+import VDateList from '@/components/VDateList.vue';
+const { t } = useI18n();
+useRouteFunction();
+
+const blocks = {
+    work: {
+        title: computed(() => t('about.work')),
+        description: `
+            Frontend разработчик. 
+            Разрабатывал на фреймворке - Vue (Nuxt2), а также разрабатывал компоненты на React (функциональный стиль).
+             Веб-разработкой увлекаюсь с 2019 года. Активно занимаюсь frontend-разработкой с февраля 2022.
+        `
+    },
+
+    bio: {
+        title: computed(() => t('about.BIO')),
+        data: [
+            {
+                date: '2019-2023',
+                text: computed(() => t('BIO.college'))
+            },
+            {
+                date: computed(() => `2024-${t('general.now')}`),
+                text: computed(() => t('BIO.university'))
+            }
+        ]
+    }
+
+};
+</script>
+
 <template>
-    <div class="about">
-        <h1>This is an about page</h1>
+    <div class="about flex flex-col gap-4">
+        <v-paragraph
+            :title="blocks.work.title"
+            :description="blocks.work.description"
+        />
+        <v-paragraph
+            :title="blocks.bio.title"
+        >
+            <v-date-list :data="blocks.bio.data"></v-date-list>
+        </v-paragraph>
     </div>
 </template>

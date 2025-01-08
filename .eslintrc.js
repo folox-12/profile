@@ -12,6 +12,8 @@ module.exports = {
         ecmaVersion: 2020
     },
     rules: {
+        'no-trailing-spaces': ['warn'],
+        'no-multiple-empty-lines': ['warn'],
         'no-console': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
         'no-debugger': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
         indent: ['error', 4],
@@ -20,11 +22,18 @@ module.exports = {
         'space-before-function-paren': ['error', 'never'],
         // 'no-shadow': ['error', { allow: ['state'] }],
         'import/prefer-default-export': 0,
-        'no-unused-vars': 'off',
-        '@typescript-eslint/no-unused-vars': 'error',
+        'no-unused-vars': ['warn'],
         'no-dupe-class-members': 'off',
         'vue/comment-directive': 'error',
         'vue/multi-word-component-names': 0,
         'vue/no-multiple-template-root': 0,
+        'vue/max-attributes-per-line': ['error', {
+            singleline: {
+                max: 2
+            },
+            multiline: {
+                max: 1
+            }
+        }]
     }
 };

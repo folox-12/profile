@@ -1,14 +1,12 @@
 <script setup lang="ts">
 import defaultLayout from './default.vue';
-import aboutLayout from './about.vue';
 import { computed } from 'vue';
 import { useRoute } from 'vue-router';
 
-type LayoutKey = 'default' | 'about';
+type LayoutKey = 'default';
 
 const LAYOUTS: Record<LayoutKey, unknown> = {
-    default: defaultLayout,
-    about: aboutLayout
+    default: defaultLayout
 };
 
 const route = useRoute();

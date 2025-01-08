@@ -1,6 +1,21 @@
 {
     "general": {
         "about": "About",
-        "works": "Works"
-    }
+        "works": "Works",
+        "source": "Source",
+        "now": "Now"
+    },
+
+    "about": {
+        "work": "Work",
+        "BIO": "BIO",
+        "contacts": "Contacts"
+    },
+
+    "BIO": {
+        "college": "College MGIMO",
+        "university": "University MTUCI"
+    },
+
+    "experience": "Work experience"
 }
