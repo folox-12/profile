@@ -3,9 +3,9 @@ import VHeader from '@/components/VHeader.vue';
 </script>
 
 <template>
-    <div class="flex-column">
+    <div class="flex flex-col h-full">
         <v-header />
-        <main class="px-16">
+        <main class="px-16 flex-grow">
             <transition>
                 <router-view />
             </transition>

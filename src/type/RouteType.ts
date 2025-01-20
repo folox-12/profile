@@ -1,5 +1,5 @@
 import { RouteRecordRaw } from 'vue-router';
-interface isSubDirictory {
-    isSubDirictory?: string;
+interface isSubDirectory {
+    isSubDirectory?: string;
 }
-export declare type RouteRecordRawWithSubDirectory = RouteRecordRaw & isSubDirictory
+export declare type RouteRecordRawWithSubDirectory = RouteRecordRaw & isSubDirectory

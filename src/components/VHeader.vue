@@ -3,7 +3,7 @@ import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { routes } from '@/router/index';
 import useChangeTheme from '@/composable/useChangeTheme';
-import { LINK_TO_GIT } from '@/constans/general';
+import { LINK_TO_GIT } from '@/constants/general';
 import { English, Russian } from '@/i18n';
 
 const { t, locale } = useI18n();
@@ -17,13 +17,13 @@ const changeLocale = () => {
     }
 };
 
-const links = computed(() => routes.filter(({ meta }) => !meta?.isSubDirictory && meta?.as !== 'link'));
+const links = computed(() => routes.filter(({ meta }) => !meta?.isSubDirectory && meta?.as !== 'link'));
 
 </script>
 
 <template>
     <header class="flex gap-3 justify-between items-center pt-3.5 pb-3.5 backdrop-filter">
-        <div class="main-menu">
+        <div class="main-menu flex-gap">
             <router-link
                 class="router-link p-2 hover:underline"
                 to="/"> {{t('general.about')}} </router-link>

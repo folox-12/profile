@@ -1,12 +1,15 @@
-<script setup>
+<script setup lang="ts">
 import { useRouteFunction } from '@/composable/useRouteFunction';
+import { computed } from 'vue';
 
-useRouteFunction();
+const { workName } = useRouteFunction();
+
+const title = computed(() => workName);
 
 </script>
 
 <template>
     <div>
-        {{ workName }}
+        {{ title }}
     </div>
 </template>

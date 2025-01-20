@@ -6,7 +6,7 @@ export const routes: Array<RouteRecordRaw> = [
         name: 'general.about',
         component: () => import('@/views/AboutView.vue'),
         meta: {
-            isSubDirictory: true,
+            isSubDirectory: true,
             title: 'general.about'
         }
     },
@@ -23,7 +23,7 @@ export const routes: Array<RouteRecordRaw> = [
     {
         path: '/works/:id',
         meta: {
-            isSubDirictory: true
+            isSubDirectory: true
         },
         component: () => import('@/views/works/WorksDetails.vue')
     }
