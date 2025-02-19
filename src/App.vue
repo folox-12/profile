@@ -7,6 +7,7 @@ import layout from '@/layouts/index.vue';
          class="
          min-h-full
          range-100
+         bg-orange-50
          dark:bg-zinc-800
          dark:text-stone-200
          hover:decoration-black

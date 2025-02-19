@@ -23,7 +23,7 @@ const links = computed(() => routes.filter(({ meta }) => !meta?.isSubDirectory &
 
 <template>
     <header class="flex gap-3 justify-between items-center pt-3.5 pb-3.5 backdrop-filter">
-        <div class="main-menu flex-gap">
+        <div class="main-menu flex gap-3 items-center">
             <router-link
                 class="router-link p-2 hover:underline"
                 to="/"> {{t('general.about')}} </router-link>

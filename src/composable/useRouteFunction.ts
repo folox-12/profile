@@ -10,8 +10,9 @@ export function useRouteFunction(title?: string) {
         let titleFromRoute = routeData.params?.id || routeData.meta.title as string;
         titleFromRoute = titleFromRoute !== undefined && Array.isArray(titleFromRoute) ? titleFromRoute[0] : titleFromRoute;
         workName.value = t(title || titleFromRoute) as string;
-        document.title = workName.value;
+        document.title = workName.value + ' - Vasilev Sergey';
     };
+
     onBeforeMount(() => {
         updateLocale();
     });
