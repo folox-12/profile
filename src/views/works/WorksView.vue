@@ -9,7 +9,7 @@ const { workName } = useRouteFunction();
         <span class="block mb-2 text-xl font-bold">
             {{ workName }}
         </span>
-        <div class="works flex flex-wrap justify-center gap-3">
+        <div class="works flex max-md:flex-wrap justify-center gap-3">
             <router-link v-for="({name, to, preview, shortDescription}, key) in PROJECT_WORKS"
                          class="basis-1/2 max-md:w-full max-md:flex-grow flex text-center align-center flex-col"
                          :key=key
