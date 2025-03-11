@@ -39,7 +39,22 @@ const blocks = {
         <v-paragraph
             :title="blocks.work.title"
             :description="blocks.work.description"
-        />
+        >
+            <template #underDescription>
+                <router-link
+                    to="/works"
+                    class="
+                    inline-block p-2 rounded bg-emerald-200
+                     dark:bg-emerald-400 dark:text-white
+                     hover:bg-emerald-500
+                     transition-all
+                     font-bold
+                    "
+                >
+                    {{  t('general.works') + " >" }}
+                </router-link>
+            </template>
+        </v-paragraph>
         <v-paragraph
             :title="blocks.bio.title"
         >

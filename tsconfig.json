@@ -16,7 +16,8 @@
     "allowJs": false,
     "types": [
       "webpack-env",
-      "vue-i18n"
+      "vue-i18n",
+      "@vue/runtime-dom"
     ],
     "paths": {
       "@/*": [

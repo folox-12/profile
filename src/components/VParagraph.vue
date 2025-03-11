@@ -26,6 +26,9 @@ defineProps<Props>();
             <span class="block indent-2">
                 {{ description }}
             </span>
+            <div class="text-center mt-2">
+                <slot name="underDescription" />
+            </div>
         </div>
         <div v-else>
             <slot></slot>
