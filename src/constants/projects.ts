@@ -1,6 +1,10 @@
 import kioskImage from '@/assets/works/kiosk/kiosk.png';
 import gymImage from '@/assets/works/gym/gym.png';
 
+type DetailedInfo = {
+    stack?: string,
+    website?: string,
+}
 export type ProjectType = {
     id: string,
     name: string,
@@ -10,6 +14,7 @@ export type ProjectType = {
     preview: string,
     images: string[],
     year?: number,
+    details?: DetailedInfo
 }
 
 export const PROJECT_WORKS: ProjectType[] = [
@@ -22,13 +27,14 @@ export const PROJECT_WORKS: ProjectType[] = [
             Приложение для культурного центра военной части, предназначенное для отображения и воспроизведения медиафайлов (фото, видео, музыка).
         `,
         description: `
-            Kiosk
             Приложение для культурного центра военной части, предназначенное для отображения и воспроизведения медиафайлов (фото, видео, музыка).
-            Tech stack: HTML, CSS, JavaScript, Node.js
         `,
         preview: kioskImage,
-        images: [kioskImage],
-        year: 2024
+        images: [kioskImage, kioskImage],
+        year: 2024,
+        details: {
+            stack: 'HTML, CSS, JavaScript, Node.js'
+        }
     },
     {
         id: 'gym',
@@ -38,8 +44,7 @@ export const PROJECT_WORKS: ProjectType[] = [
             Веб-приложение предоставляет пользователям удобный инструмент для создания, планирования и распространения программ тренировок.
         `,
         description: `
-                    Веб-приложение предоставляет пользователям удобный инструмент для создания, планирования и распространения программ тренировок.
-            Создание тренировочных программ
+                    Веб-приложение предоставляет пользователям удобный инструмент для создания, планирования и распространения программ тренировок.  Создание тренировочных программ
             Гибкий редактор для составления индивидуальных и групповых программ тренировок.
             Запись тренировок в календарь
             Интеграция с календарем для удобного планирования тренировочного процесса.
@@ -50,7 +55,10 @@ export const PROJECT_WORKS: ProjectType[] = [
         `,
         preview: gymImage,
         images: [gymImage],
-        year: 2023
+        year: 2023,
+        details: {
+            stack: 'HTML, CSS, JavaScript, Nuxt2, Pinia, Node.js, Express.js, Sequelize'
+        }
     }
 ];
 
