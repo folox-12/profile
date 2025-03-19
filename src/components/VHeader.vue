@@ -1,14 +1,14 @@
 <script setup lang="ts">
-import { computed, type Component } from 'vue';
+import { computed, ref, type Component } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { routes } from '@/router/index';
+import router, { routes } from '@/router/index';
 import useChangeTheme from '@/composable/useChangeTheme';
 import { LINK_TO_GIT } from '@/constants/general';
 import { English, Russian } from '@/i18n';
 import VSvgComponent from './VSvgComponent.vue';
 import russianFlag from '@/assets/icons/russian_flag.vue';
 import engFlag from '@/assets/icons/eng_flag.vue';
-import { mdiWhiteBalanceSunny, mdiMoonWaningCrescent } from '@mdi/js';
+import { mdiWhiteBalanceSunny, mdiMoonWaningCrescent, mdiMenu, mdiClose } from '@mdi/js';
 
 const { t, locale } = useI18n();
 const { toggleTheme, isThemeDark: isDark } = useChangeTheme();
@@ -36,17 +36,30 @@ const flags = computed<{
     }
 ]);
 
+const isMenuOpen = ref(false);
+
 const changeLocale = () => {
     if (currentLocale.value === English) {
         currentLocale.value = Russian;
+        localStorage.setItem('locale', Russian);
     } else {
         currentLocale.value = English;
+        localStorage.setItem('locale', English);
     }
 };
 
+const menuMobileLinksClass = `
+                            hover:cursor-pointer
+                            text-2xl dark:text-white text-zinc-800
+                            font-bold
+                            ` as const;
 const links = computed(() => routes
     .filter(({ meta }) => !meta?.isSubDirectory && meta?.as !== 'link'));
 
+const navigateTo = (path: string): void => {
+    isMenuOpen.value = false;
+    router.push(path);
+};
 </script>
 
 <template>
@@ -92,6 +105,57 @@ const links = computed(() => routes
             >
                 <component :is="component"/>
             </VSvgComponent>
+            <VSvgComponent class="md:hidden ml-5 dark:fill-white"
+                           viewBox="0 0 24 24"
+                           :icon="mdiMenu"
+                           @click="isMenuOpen = true"
+            />
+
+            <div
+                v-if="isMenuOpen"
+                class="
+                md:hidden
+                fixed size-full top-0 left-0 z-50
+                bg-stone-800 bg-opacity-90 backdrop-blur-sm
+                "
+            >
+                <div
+                    v-motion-slide-visible-once-right
+                    class="
+                    relative
+                    h-full
+                    flex items-center justify-center flex-col gap-1
+                    "
+                >
+                    <span
+                        :class="menuMobileLinksClass"
+                        @click="navigateTo('/')"
+                    >
+
+                        {{t('general.about')}}
+                    </span>
+                    <span
+                        v-for="(item, index) in links"
+                        :class="menuMobileLinksClass"
+                        :key="index"
+                        @click="navigateTo(item.path)"
+                    >
+                        {{ t(item.name as string) }}
+                    </span>
+                    <a target="_blank"
+                       :class="menuMobileLinksClass"
+                       :href="LINK_TO_GIT"
+                    >
+                        {{ t('general.source') }}
+                    </a>
+                    <VSvgComponent
+                        class="absolute top-2 right-2"
+                        fill="white"
+                        :icon="mdiClose"
+                        @click="isMenuOpen = false"
+                    />
+                </div>
+            </div>
         </div>
     </header>
 </template>

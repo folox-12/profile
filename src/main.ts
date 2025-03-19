@@ -11,9 +11,11 @@ import { createI18n } from 'vue-i18n';
 // @ts-ignore
 import { defaultLanguage, languages } from '@/i18n';
 
+const savedLocale = localStorage.getItem('locale') || defaultLanguage;
+
 const i18n = createI18n({
     legacy: false,
-    locale: defaultLanguage,
+    locale: savedLocale,
     fallbackLocale: defaultLanguage,
     messages: {
         ...languages
