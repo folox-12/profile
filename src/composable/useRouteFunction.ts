@@ -2,7 +2,6 @@ import { useRoute } from 'vue-router';
 import { onBeforeMount, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
-
 export function useRouteFunction(title?: string) {
     const workName = ref<string>();
     const { t, locale } = useI18n();
