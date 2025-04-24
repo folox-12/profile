@@ -10,11 +10,7 @@ useRouteFunction();
 const blocks = {
     work: {
         title: computed(() => t('about.work')),
-        description: `
-            Frontend разработчик. 
-            Разрабатывал на фреймворке - Vue (Nuxt2), а также разрабатывал компоненты на React (функциональный стиль).
-             Веб-разработкой увлекаюсь с 2019 года. Активно занимаюсь frontend-разработкой с февраля 2022.
-        `
+        description: computed(() => t('aboutText'))
     },
 
     bio: {

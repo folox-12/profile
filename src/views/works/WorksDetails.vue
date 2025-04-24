@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { useRouteFunction } from '@/composable/useRouteFunction';
 import { computed, onMounted, ref } from 'vue';
-import { useI18n } from 'vue-i18n';
 import { getProjectWorkById, ProjectType } from '@/constants/projects';
+import useTranslation from '@/composable/useTranslation';
+import { useI18n } from 'vue-i18n';
+const { t } = useI18n();
 
 const { workName } = useRouteFunction();
-const { t } = useI18n();
+const { getTranslatedDescription } = useTranslation();
 
 const title = computed(() => workName);
 
@@ -47,14 +49,18 @@ onMounted(() => {
     </nav>
     <div>
         <p class="font-bold text-2xl py-2">{{ currentProject?.name}}</p>
-        <p class="py-2.5">{{ currentProject?.description }}</p>
+        <p class="py-2.5">{{ getTranslatedDescription(currentProject?.description) }}</p>
 
         <ul v-if="details">
             <li v-if="details.stack">
-                <span :class="liClass">Стек</span>{{ details.stack }}
+                <span :class="liClass">
+                    {{  t('general.stack') }}
+                </span>{{ details.stack }}
             </li>
             <li v-if="details.website">
-                <span :class="liClass">Сайт</span>{{ details.website }}
+                <span :class="liClass">
+                    {{ t('general.site')}}
+                </span>{{ details.website }}
             </li>
         </ul>
 

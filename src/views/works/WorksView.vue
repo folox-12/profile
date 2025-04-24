@@ -1,7 +1,17 @@
 <script setup lang="ts">
 import { useRouteFunction } from '@/composable/useRouteFunction';
 import { PROJECT_WORKS } from '@/constants/projects';
+import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 const { workName } = useRouteFunction();
+const { t } = useI18n();
+const ProjectWithDescription = PROJECT_WORKS.map(({ shortDescription, description, ...other }) => {
+    return {
+        shortDescription: computed(() => t(shortDescription)),
+        description: computed(() => t(description)),
+        ...other
+    };
+});
 </script>
 
 <template>
@@ -10,7 +20,7 @@ const { workName } = useRouteFunction();
             {{ workName }}
         </span>
         <div class="works flex max-md:flex-wrap justify-center gap-3">
-            <router-link v-for="({ name, to, preview, shortDescription }, key) in PROJECT_WORKS"
+            <router-link v-for="({ name, to, preview, shortDescription }, key) in ProjectWithDescription"
                          class="basis-1/2 max-md:w-full max-md:flex-grow flex text-center align-center flex-col"
                          :key=key
                          :to="to">

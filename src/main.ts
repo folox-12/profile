@@ -9,7 +9,7 @@ import { MotionPlugin } from '@vueuse/motion';
 import { createI18n } from 'vue-i18n';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-import { defaultLanguage, languages } from '@/i18n';
+import { defaultLanguage, languages } from '@/locales';
 
 const savedLocale = localStorage.getItem('locale') || defaultLanguage;
 

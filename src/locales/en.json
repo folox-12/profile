@@ -1,0 +1,34 @@
+{
+    "general": {
+        "about": "About",
+        "works": "Works",
+        "source": "Source",
+        "now": "Now",
+        "stack": "STACK",
+        "site": "Site"
+    },
+
+    "works": {
+        "kiosk": {
+            "description":"An application for the cultural center of a military unit, designed to display and play media files (photos, videos, music).",
+            "shortDescription": "   Kiosk An application for the cultural center of a military unit, designed to display and play media files (photos, videos, music)."
+        },
+        "gym": {
+            "description":"The web application provides users with a convenient tool for creating, planning and distributing workout programs. Create workout programs Flexible editor for creating individual and group workout programs. Calendarize workouts Integrate with a calendar for easy scheduling of workouts. Publishing programs on the site The ability to publish programs on an open platform for access by other users. Adding programs to your personal profile The ability to save your favorite programs to your personal profile.",
+            "shortDescription": "The web application provides users with a convenient tool for creating, planning and distributing workout programs."
+        }
+    },
+    "about": {
+        "work": "Work",
+        "BIO": "BIO",
+        "contacts": "Contacts"
+    },
+
+    "BIO": {
+        "college": "College MGIMO",
+        "university": "University MTUCI"
+    },
+
+    "aboutText": "Frontend developer. Developed on framework - Vue (Nuxt2) and also developed components on React (functional style). I have been passionate about web development since 2019. Actively involved in frontend development since February 2022.",
+    "experience": "Work experience"
+}

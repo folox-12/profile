@@ -1,21 +1,5 @@
 {
-    "general": {
-        "about": "Обо мне",
-        "works": "Проекты",
-        "source": "Гит",
-        "now": "Сейчас"
-    },
-
-    "about": {
-        "work": "Работа",
-        "BIO": "БИО",
-        "contacts": "Контакты"
-    },
-
-    "BIO": {
-        "college": "Колледж МГИМО",
-        "university": "Университет МТУСИ"
-    },
-
-    "experience": "Опыт работы"
+    "dfad": "df",
+    "fasdf": "asdf",
+    "q": "w"
 }

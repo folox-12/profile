@@ -4,7 +4,7 @@ import { useI18n } from 'vue-i18n';
 import router, { routes } from '@/router/index';
 import useChangeTheme from '@/composable/useChangeTheme';
 import { LINK_TO_GIT } from '@/constants/general';
-import { English, Russian } from '@/i18n';
+import { English, Russian } from '@/locales';
 import VSvgComponent from './VSvgComponent.vue';
 import russianFlag from '@/assets/icons/russian_flag.vue';
 import engFlag from '@/assets/icons/eng_flag.vue';
@@ -52,6 +52,7 @@ const menuMobileLinksClass = `
                             hover:cursor-pointer
                             text-2xl dark:text-white text-zinc-800
                             font-bold
+                            text-white
                             ` as const;
 const links = computed(() => routes
     .filter(({ meta }) => !meta?.isSubDirectory && meta?.as !== 'link'));
