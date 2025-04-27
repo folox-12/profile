@@ -50,7 +50,7 @@ const changeLocale = () => {
 
 const menuMobileLinksClass = `
                             hover:cursor-pointer
-                            text-2xl dark:text-white text-zinc-800
+                            text-2xl text-white
                             font-bold
                             text-white
                             ` as const;
