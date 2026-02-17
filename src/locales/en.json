@@ -5,7 +5,8 @@
         "source": "Source",
         "now": "Now",
         "stack": "STACK",
-        "site": "Site"
+        "site": "Site",
+        "code": "Source code"
     },
 
     "works": {
@@ -16,6 +17,10 @@
         "gym": {
             "description":"The web application provides users with a convenient tool for creating, planning and distributing workout programs. Create workout programs Flexible editor for creating individual and group workout programs. Calendarize workouts Integrate with a calendar for easy scheduling of workouts. Publishing programs on the site The ability to publish programs on an open platform for access by other users. Adding programs to your personal profile The ability to save your favorite programs to your personal profile.",
             "shortDescription": "The web application provides users with a convenient tool for creating, planning and distributing workout programs."
+        },
+        "chop": {
+          "description": "HR document generator for private security companies (PSCs). This desktop application simplifies the creation of HR documents for private security companies. It imports employee data from Excel files and uses pre-prepared .docx templates to generate various documents. The application supports the management of multiple organizations, allowing you to easily switch between different company profiles. Users can select multiple employees and generate documents in batches, with files automatically saved to the desktop. Developed using Tauri, React, TypeScript, and other modern technologies. Includes a user-friendly interface with an interactive employee table and convenient document generation.",
+          "shortDescription": "Desktop application for simplifying the generation of HR documents for private security companies with employee data import and customizable .docx templates. Create documents in batch mode with automatic file saving to the desktop."
         }
     },
     "about": {
@@ -26,7 +31,7 @@
 
     "BIO": {
         "college": "College MGIMO",
-        "university": "University MTUCI"
+        "university": "Moscow Technical University of Communications and Informatics"
     },
 
     "aboutText": "Frontend developer. Developed on framework - Vue (Nuxt2) and also developed components on React (functional style). I have been passionate about web development since 2019. Actively involved in frontend development since February 2022.",

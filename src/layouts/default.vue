@@ -10,7 +10,7 @@ const fullPath = computed(() => route.fullPath);
 <template>
     <div class="flex flex-col h-full">
         <v-header />
-        <main class="px-16 flex-grow">
+        <main class="px-16 flex-grow max-md:px-5">
             <div v-motion-slide-visible-bottom
                  :key="fullPath">
                 <router-view />

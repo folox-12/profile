@@ -59,8 +59,17 @@ onMounted(() => {
             </li>
             <li v-if="details.website">
                 <span :class="liClass">
-                    {{ t('general.site')}}
-                </span>{{ details.website }}
+                    {{ t('general.code')}}
+                </span>
+                <a 
+                v-for="(link, index) in details.website" 
+                :key="index" 
+                :href="link" 
+                target="_blank"
+                class="underline inline-block"
+                >
+                {{link}}
+              </a>
             </li>
         </ul>
 

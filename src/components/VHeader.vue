@@ -163,6 +163,7 @@ const navigateTo = (path: string): void => {
 <style>
 .router-link-exact-active {
   background-color: #6EDCC4C8;
+  border-radius: 0.25rem;
 
   &:hover {
     color: black;
