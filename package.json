@@ -7,7 +7,7 @@
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
     "predeploy": "yarn build",
-    "deploy": "gh-pages -d dist"
+    "deploy": "gh-pages -d dist -r git@github.com:folox-12/folox-12.github.io.git -b main"
   },
   "dependencies": {
     "@mdi/js": "^7.4.47",
