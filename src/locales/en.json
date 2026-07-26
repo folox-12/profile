@@ -20,13 +20,18 @@
         },
         "chop": {
           "description": "HR document generator for private security companies (PSCs). This desktop application simplifies the creation of HR documents for private security companies. It imports employee data from Excel files and uses pre-prepared .docx templates to generate various documents. The application supports the management of multiple organizations, allowing you to easily switch between different company profiles. Users can select multiple employees and generate documents in batches, with files automatically saved to the desktop. Developed using Tauri, React, TypeScript, and other modern technologies. Includes a user-friendly interface with an interactive employee table and convenient document generation.",
-          "shortDescription": "Desktop application for simplifying the generation of HR documents for private security companies with employee data import and customizable .docx templates. Create documents in batch mode with automatic file saving to the desktop."
+          "shortDescription": "Desktop application for simplifying the generation of HR documents for private security companies with employee data import and customizable .docx templates."
         }
     },
     "about": {
         "work": "Work",
         "BIO": "BIO",
-        "contacts": "Contacts"
+        "contacts": "Contacts",
+        "skills": "Skills"
+    },
+    "hero": {
+        "name": "Sergey Vasilev",
+        "role": "Frontend Developer"
     },
 
     "BIO": {

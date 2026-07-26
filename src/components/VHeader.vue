@@ -64,25 +64,46 @@ const navigateTo = (path: string): void => {
 </script>
 
 <template>
-    <header class="flex gap-3 justify-between items-center pt-3.5 pb-3.5 backdrop-filter">
-        <div class="main-menu flex gap-3 items-center max-md:hidden">
+    <header class="flex gap-4 justify-between items-center flex-wrap pt-7 pb-7">
+        <div class="main-menu flex gap-2 items-center max-md:hidden">
             <router-link
-                class="router-link p-2 hover:underline"
+                class="router-link py-2.5 px-4 rounded-lg font-medium transition-colors"
                 to="/"
             >
                 {{t('general.about')}}
             </router-link>
             <router-link
                 v-for="(item, index) in links"
-                class="router-link p-2 hover:underline"
+                class="router-link py-2.5 px-4 rounded-lg font-medium transition-colors"
                 :key="index"
                 :to="item.path"
             >
                 {{ t(item.name as string) }}
             </router-link>
-            <a target="_blank" :href="LINK_TO_GIT">{{ t('general.source') }}</a>
+            <a class="py-2.5 px-4 rounded-lg font-medium text-soft dark:text-soft-dark hover:underline"
+               target="_blank"
+               :href="LINK_TO_GIT"
+            >
+                {{ t('general.source') }}
+            </a>
         </div>
-        <div class="grow flex justify-end gap-1">
+        <div class="grow flex justify-end items-center gap-3.5">
+            <div class="flex border border-black/10 dark:border-white/[.14] rounded-full overflow-hidden text-[13px] font-bold select-none">
+                <span
+                    class="py-1.5 px-3 cursor-pointer transition-colors"
+                    :class="currentLocale === Russian
+                        ? 'bg-mint dark:bg-mint-dark text-onmint dark:text-white'
+                        : 'text-soft dark:text-soft-dark'"
+                    @click="changeLocale"
+                >RU</span>
+                <span
+                    class="py-1.5 px-3 cursor-pointer transition-colors"
+                    :class="currentLocale === English
+                        ? 'bg-mint dark:bg-mint-dark text-onmint dark:text-white'
+                        : 'text-soft dark:text-soft-dark'"
+                    @click="changeLocale"
+                >EN</span>
+            </div>
             <VSvgComponent
                 v-if="isDark"
                 v-motion-slide-bottom
@@ -97,16 +118,7 @@ const navigateTo = (path: string): void => {
                 :icon="mdiMoonWaningCrescent"
                 @click="toggleTheme"
             />
-            <VSvgComponent
-                v-for="({ show, viewBox, component }, key) in flags"
-                v-show="show"
-                :key="key"
-                :viewBox="viewBox"
-                @click="() => changeLocale()"
-            >
-                <component :is="component"/>
-            </VSvgComponent>
-            <VSvgComponent class="md:hidden ml-5 dark:fill-white"
+            <VSvgComponent class="md:hidden ml-2 dark:fill-white"
                            viewBox="0 0 24 24"
                            :icon="mdiMenu"
                            @click="isMenuOpen = true"
@@ -117,7 +129,7 @@ const navigateTo = (path: string): void => {
                 class="
                 md:hidden
                 fixed size-full top-0 left-0 z-50
-                bg-stone-800 bg-opacity-90 backdrop-blur-sm
+                bg-ink/90 dark:bg-bg-dark/95 backdrop-blur-sm
                 "
             >
                 <div
@@ -161,12 +173,19 @@ const navigateTo = (path: string): void => {
     </header>
 </template>
 <style>
+.router-link {
+  color: theme('colors.soft');
+}
+.dark .router-link {
+  color: theme('colors.soft-dark');
+}
 .router-link-exact-active {
-  background-color: #6EDCC4C8;
-  border-radius: 0.25rem;
-
-  &:hover {
-    color: black;
-  }
+  font-weight: 700;
+  background-color: theme('colors.mint / 20%');
+  color: theme('colors.ink');
+}
+.dark .router-link-exact-active {
+  background-color: theme('colors.nav-active-dark');
+  color: #fff;
 }
 </style>

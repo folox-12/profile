@@ -11,9 +11,9 @@ defineProps<Props>();
 <template>
     <div class="">
         <h2 class="
-            block
-            py-3 text-xl font-bold
-            decoration-4 decoration-gray-600 underline underline-offset-8
+            inline-block
+            mb-3.5 text-[22px] font-bold
+            pb-2 border-b-[3px] border-ink dark:border-ink-dark
             "
         >
 
@@ -23,10 +23,10 @@ defineProps<Props>();
             </span>
         </h2>
         <div v-if="description">
-            <span class="block indent-2">
+            <span class="block max-w-[640px] leading-[1.7] text-soft dark:text-soft-dark">
                 {{ description }}
             </span>
-            <div class="text-center mt-2">
+            <div class="mt-[18px]">
                 <slot name="underDescription" />
             </div>
         </div>

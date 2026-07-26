@@ -13,9 +13,9 @@ defineProps<
 
 </script>
 <template>
-    <ul>
+    <ul class="flex flex-col gap-2">
         <li v-for="(element, key) in data"
-            class="flex"
+            class="text-[15px] leading-[1.6]"
             :key="key">
             <span class="mr-2 font-bold">{{ element.date }}</span>
             <span class="break-words break-all">{{ element.text }}</span>
