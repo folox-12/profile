@@ -18,7 +18,7 @@ const fullPath = computed(() => route.fullPath);
                 </div>
             </main>
             <footer class="text-center text-soft dark:text-soft-dark py-2 text-sm">
-                © 2024 Vasilev Sergey. All Rights Reserved.
+                © 2026 Vasilev Sergey. All Rights Reserved.
             </footer>
         </div>
     </div>
