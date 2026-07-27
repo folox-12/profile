@@ -5,6 +5,7 @@
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
+    "postbuild": "cp dist/index.html dist/404.html",
     "lint": "vue-cli-service lint",
     "predeploy": "yarn build",
     "deploy": "gh-pages -d dist -r git@github.com:folox-12/folox-12.github.io.git -b main"
