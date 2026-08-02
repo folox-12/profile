@@ -52,6 +52,7 @@ const setImage = (id: string, index: number, event: MouseEvent) => {
                          flex flex-col gap-3
                          transition-transform
                          hover:-translate-y-1 hover:shadow-[0_10px_24px_rgba(0,0,0,0.12)]
+                         focus-visible:ring-2 focus-visible:ring-mintline dark:focus-visible:ring-mintline-dark focus-visible:outline-none
                          "
                          :key=key
                          :to="to">
@@ -61,7 +62,7 @@ const setImage = (id: string, index: number, event: MouseEvent) => {
                             <div class="relative w-full h-full rounded-[3px] overflow-hidden bg-black">
                                 <img v-for="(image, imgKey) in images"
                                      :key="imgKey"
-                                     alt="preview"
+                                     :alt="name"
                                      class="absolute inset-0 w-full h-full object-cover transition-opacity duration-300"
                                      :class="imgKey === currentIndex(id) ? 'opacity-100' : 'opacity-0 pointer-events-none'"
                                      :src="image">
@@ -72,17 +73,26 @@ const setImage = (id: string, index: number, event: MouseEvent) => {
 
                     <template v-if="images.length > 1">
                         <div
-                            class="absolute left-1.5 top-[44%] -translate-y-1/2 w-7 h-7 rounded-full bg-black/45 text-white flex items-center justify-center cursor-pointer text-sm z-[3]"
+                            role="button"
+                            tabindex="0"
+                            :aria-label="`${name} — ${t('general.prevImage')}`"
+                            class="absolute left-1.5 top-[44%] -translate-y-1/2 w-7 h-7 rounded-full bg-black/45 text-white flex items-center justify-center cursor-pointer text-sm z-[3] focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none"
                             @click="(e) => shiftImage(id, images.length, -1, e)"
+                            @keydown.enter="(e) => shiftImage(id, images.length, -1, e)"
                         >‹</div>
                         <div
-                            class="absolute right-1.5 top-[44%] -translate-y-1/2 w-7 h-7 rounded-full bg-black/45 text-white flex items-center justify-center cursor-pointer text-sm z-[3]"
+                            role="button"
+                            tabindex="0"
+                            :aria-label="`${name} — ${t('general.nextImage')}`"
+                            class="absolute right-1.5 top-[44%] -translate-y-1/2 w-7 h-7 rounded-full bg-black/45 text-white flex items-center justify-center cursor-pointer text-sm z-[3] focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none"
                             @click="(e) => shiftImage(id, images.length, 1, e)"
+                            @keydown.enter="(e) => shiftImage(id, images.length, 1, e)"
                         >›</div>
                         <div class="absolute bottom-1 left-0 right-0 flex justify-center gap-1.5 z-[3]">
                             <div v-for="(image, dotKey) in images"
                                  :key="dotKey"
-                                 class="w-1.5 h-1.5 rounded-full cursor-pointer"
+                                 :aria-label="`${dotKey + 1}`"
+                                 class="w-1.5 h-1.5 rounded-full cursor-pointer focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none"
                                  :class="dotKey === currentIndex(id) ? 'bg-ink dark:bg-ink-dark' : 'bg-black/20 dark:bg-white/20'"
                                  @click="(e) => setImage(id, dotKey, e)"
                             ></div>
@@ -99,6 +109,8 @@ const setImage = (id: string, index: number, event: MouseEvent) => {
                           py-1 px-2.5 rounded-md
                           bg-tagbg dark:bg-imgbg-dark
                           text-soft dark:text-soft-dark
+                          transition-transform
+                          group-hover:-translate-y-0.5
                           "
                     >{{ tag }}</span>
                 </div>

@@ -11,6 +11,8 @@ import chop4 from '@/assets/works/chop/chop4.png';
 type DetailedInfo = {
     stack?: string,
     website?: string[],
+    role?: string,
+    period?: string,
 }
 export type ProjectType = {
     id: string,
@@ -36,7 +38,8 @@ export const PROJECT_WORKS: ProjectType[] = [
         year: 2024,
         details: {
             stack: 'HTML, CSS, JavaScript, Node.js',
-            website: ['https://github.com/folox-12/kiosk']
+            website: ['https://github.com/folox-12/kiosk'],
+            period: '2024'
         }
     },
     {
@@ -50,7 +53,8 @@ export const PROJECT_WORKS: ProjectType[] = [
         year: 2023,
         details: {
             stack: 'HTML, CSS, JavaScript, Nuxt2, Pinia, Node.js, Express.js, Sequelize',
-            website: ['https://github.com/folox-12/gym_front', 'https://github.com/folox-12/gym_front']
+            website: ['https://github.com/folox-12/gym_front', 'https://github.com/folox-12/gym_front'],
+            period: '2023'
         }
     },
     {
@@ -64,7 +68,8 @@ export const PROJECT_WORKS: ProjectType[] = [
         year: 2026,
         details: {
             stack: 'React, Tauri, Tailwind CSS, Rust, TypeScript',
-            website: ['https://github.com/folox-12/CHOP-Gen-App']
+            website: ['https://github.com/folox-12/CHOP-Gen-App'],
+            period: '2026'
         }
     }
 ];

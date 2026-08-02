@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useRouteFunction } from '@/composable/useRouteFunction';
 import { computed, onMounted, ref } from 'vue';
-import { getProjectWorkById, ProjectType } from '@/constants/projects';
+import { getProjectWorkById, ProjectType, PROJECT_WORKS } from '@/constants/projects';
 import useTranslation from '@/composable/useTranslation';
 import { useI18n } from 'vue-i18n';
 const { t } = useI18n();
@@ -14,6 +14,20 @@ const title = computed(() => workName);
 const currentProject = ref<ProjectType | undefined>();
 
 const details = computed(() => currentProject.value?.details);
+
+const currentIndex = computed(() => PROJECT_WORKS.findIndex(p => p.id === currentProject.value?.id));
+
+const prevProject = computed<ProjectType | undefined>(() => {
+    if (currentIndex.value === -1 || PROJECT_WORKS.length < 2) return undefined;
+    const index = (currentIndex.value - 1 + PROJECT_WORKS.length) % PROJECT_WORKS.length;
+    return PROJECT_WORKS[index];
+});
+
+const nextProject = computed<ProjectType | undefined>(() => {
+    if (currentIndex.value === -1 || PROJECT_WORKS.length < 2) return undefined;
+    const index = (currentIndex.value + 1) % PROJECT_WORKS.length;
+    return PROJECT_WORKS[index];
+});
 
 const stackList = computed(() => details.value?.stack?.split(',').map(s => s.trim()) ?? []);
 
@@ -46,6 +60,18 @@ onMounted(() => {
     </p>
 
     <div v-if="details" class="flex flex-wrap gap-[22px] items-baseline mb-[26px]">
+        <div v-if="details.role" class="flex items-center gap-2.5">
+            <span class="text-[11px] font-bold uppercase tracking-[.04em] text-soft dark:text-soft-dark">
+                {{ t('general.role') }}
+            </span>
+            <span class="text-sm">{{ details.role }}</span>
+        </div>
+        <div v-if="details.period" class="flex items-center gap-2.5">
+            <span class="text-[11px] font-bold uppercase tracking-[.04em] text-soft dark:text-soft-dark">
+                {{ t('general.period') }}
+            </span>
+            <span class="text-sm">{{ details.period }}</span>
+        </div>
         <div v-if="stackList.length" class="flex items-center gap-2.5">
             <span class="text-[11px] font-bold uppercase tracking-[.04em] text-soft dark:text-soft-dark">
                 {{ t('general.stack') }}
@@ -85,7 +111,41 @@ onMounted(() => {
             <img
                 class="w-full h-full object-cover"
                 :src="image"
+                :alt="`${currentProject?.name} — ${key + 1}`"
             />
         </div>
+    </div>
+
+    <div
+        v-if="prevProject || nextProject"
+        class="flex justify-between items-center mt-8 pt-6 border-t border-black/10 dark:border-white/[.14]"
+    >
+        <router-link
+            v-if="prevProject"
+            :to="prevProject.to"
+            class="
+            flex items-center gap-1.5 text-sm font-semibold
+            hover:underline
+            focus-visible:ring-2 focus-visible:ring-mintline dark:focus-visible:ring-mintline-dark focus-visible:outline-none rounded
+            "
+        >
+            <span aria-hidden="true">←</span>
+            <span class="sr-only">{{ t('general.prevProject') }}:</span>
+            {{ prevProject.name }}
+        </router-link>
+        <span v-else></span>
+        <router-link
+            v-if="nextProject"
+            :to="nextProject.to"
+            class="
+            flex items-center gap-1.5 text-sm font-semibold
+            hover:underline
+            focus-visible:ring-2 focus-visible:ring-mintline dark:focus-visible:ring-mintline-dark focus-visible:outline-none rounded
+            "
+        >
+            <span class="sr-only">{{ t('general.nextProject') }}:</span>
+            {{ nextProject.name }}
+            <span aria-hidden="true">→</span>
+        </router-link>
     </div>
 </template>
