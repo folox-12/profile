@@ -117,7 +117,6 @@ const navigateTo = (path: string): void => {
                 >EN</span>
             </div>
             <VSvgComponent
-                v-motion-slide-bottom
                 :fill="isDark ? 'yellow' : 'MediumSlateBlue'"
                 :icon="isDark ? mdiWhiteBalanceSunny : mdiMoonWaningCrescent"
                 :aria-label="t('general.toggleTheme')"
