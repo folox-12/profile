@@ -1,9 +1,14 @@
 import kioskImage from '@/assets/works/kiosk/kiosk.png';
 import kioskThanks from '@/assets/works/kiosk/thanks.png';
+import kioskVideo from '@/assets/works/kiosk/video.png';
 
 import gymImage from '@/assets/works/gym/gym.png';
 import gymDemoVideo from '@/assets/works/gym/gym-demo.mp4';
 import gymDemoPoster from '@/assets/works/gym/gym-demo-poster.jpg';
+import gymLogin from '@/assets/works/gym/gym-login.jpg';
+import gymPrograms from '@/assets/works/gym/gym-programs.jpg';
+import gymNewComplex from '@/assets/works/gym/gym-new-complex.jpg';
+import gymTrainingDay from '@/assets/works/gym/gym-training-day.jpg';
 
 import chop1 from '@/assets/works/chop/chop1.png';
 import chop2 from '@/assets/works/chop/chop2.png';
@@ -53,7 +58,7 @@ export const PROJECT_WORKS: ProjectType[] = [
         shortDescription: 'works.kiosk.shortDescription',
         description: 'works.kiosk.description',
         preview: kioskImage,
-        media: [image(kioskImage), image(kioskThanks)],
+        media: [image(kioskImage), image(kioskThanks), image(kioskVideo)],
         year: 2024,
         details: {
             stack: 'HTML, CSS, JavaScript, Node.js',
@@ -68,7 +73,14 @@ export const PROJECT_WORKS: ProjectType[] = [
         shortDescription: 'works.gym.shortDescription',
         description: 'works.gym.description',
         preview: gymImage,
-        media: [{ type: 'video', src: gymDemoVideo, poster: gymDemoPoster }, image(gymImage)],
+        media: [
+            { type: 'video', src: gymDemoVideo, poster: gymDemoPoster },
+            image(gymImage),
+            image(gymLogin),
+            image(gymPrograms),
+            image(gymNewComplex),
+            image(gymTrainingDay)
+        ],
         year: 2023,
         details: {
             stack: 'HTML, CSS, JavaScript, Nuxt2, Pinia, Node.js, Express.js, Sequelize',
