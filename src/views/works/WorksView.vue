@@ -48,15 +48,16 @@ const setImage = (id: string, index: number, event: MouseEvent) => {
                          group
                          bg-card dark:bg-card-dark
                          border border-black/10 dark:border-white/[.14]
-                         rounded-2xl p-[18px]
-                         flex flex-col gap-3
-                         transition-transform
-                         hover:-translate-y-1 hover:shadow-[0_10px_24px_rgba(0,0,0,0.12)]
+                         rounded-2xl p-5
+                         flex flex-col gap-3.5
+                         shadow-[0_1px_2px_rgba(0,0,0,0.04)]
+                         transition-all duration-300 ease-out
+                         hover:-translate-y-1.5 hover:shadow-[0_18px_32px_rgba(0,0,0,0.14)] hover:border-mintline/60 dark:hover:border-mintline-dark/60
                          focus-visible:ring-2 focus-visible:ring-mintline dark:focus-visible:ring-mintline-dark focus-visible:outline-none
                          "
                          :key=key
                          :to="to">
-                <div class="laptop-frame relative w-full h-[230px] flex items-end justify-center rounded-[10px] overflow-hidden pb-[18px] bg-imgbg dark:bg-imgbg-dark">
+                <div class="laptop-frame relative w-full h-[230px] flex items-end justify-center rounded-[10px] overflow-hidden pb-[18px] bg-imgbg dark:bg-imgbg-dark ring-1 ring-black/5 dark:ring-white/5">
                     <div class="laptop-tilt relative w-[220px]">
                         <div class="relative w-full aspect-[16/10] bg-[#1b1b1b] rounded-t-lg rounded-b-[3px] p-[7px_7px_9px] shadow-[0_20px_26px_rgba(0,0,0,0.25)]">
                             <div class="relative w-full h-full rounded-[3px] overflow-hidden bg-black">
@@ -99,19 +100,20 @@ const setImage = (id: string, index: number, event: MouseEvent) => {
                         </div>
                     </template>
                 </div>
-                <p class="text-[17px] font-bold font-serif">{{ name }}</p>
-                <p class="text-sm leading-[1.55] text-soft dark:text-soft-dark flex-1">{{ shortDescription }}</p>
+                <p class="text-lg font-bold font-serif tracking-tight truncate">{{ name }}</p>
+                <p class="text-sm leading-[1.55] text-soft dark:text-soft-dark flex-1 line-clamp-2">{{ shortDescription }}</p>
                 <div v-if="tags.length" class="flex flex-wrap gap-1.5">
-                    <span v-for="tag in tags"
+                    <span v-for="(tag, tagIndex) in tags"
                           :key="tag"
                           class="
                           text-[11px] font-bold uppercase tracking-[.03em]
-                          py-1 px-2.5 rounded-md
-                          bg-tagbg dark:bg-imgbg-dark
-                          text-soft dark:text-soft-dark
+                          py-1 px-2.5 rounded-md border
                           transition-transform
                           group-hover:-translate-y-0.5
                           "
+                          :class="tagIndex === 0
+                              ? 'bg-mint dark:bg-mint-dark text-onmint dark:text-white border-mintline dark:border-mintline-dark'
+                              : 'bg-tagbg dark:bg-imgbg-dark text-soft dark:text-soft-dark border-transparent'"
                     >{{ tag }}</span>
                 </div>
             </router-link>
@@ -129,6 +131,6 @@ const setImage = (id: string, index: number, event: MouseEvent) => {
     transition: transform .45s ease;
 }
 .group:hover .laptop-tilt {
-    transform: rotateX(6deg);
+    transform: rotateX(6deg) scale(1.03);
 }
 </style>
