@@ -12,7 +12,7 @@
     "hero": {
         "name": "Васильев Сергей",
         "role": "Frontend Developer",
-        "downloadResume": "Скачать резюме",
+        "downloadCV": "Скачать резюме",
         "socialGithub": "GitHub",
         "socialTelegram": "Telegram",
         "socialLinkedin": "LinkedIn",

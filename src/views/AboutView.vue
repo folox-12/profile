@@ -4,7 +4,7 @@ import { useRouteFunction } from '@/composable/useRouteFunction';
 import { useI18n } from 'vue-i18n';
 import VParagraph from '@/components/VParagraph.vue';
 import VDateList from '@/components/VDateList.vue';
-import { EMAIL, SKILLS, LINK_TO_GIT, LINK_TO_TELEGRAM, LINK_TO_LINKEDIN, RESUME_PATH } from '@/constants/general';
+import { EMAIL, SKILLS, LINK_TO_GIT, LINK_TO_TELEGRAM, LINK_TO_LINKEDIN, CV_PATH } from '@/constants/general';
 import { mdiGithub, mdiLinkedin, mdiEmailOutline } from '@mdi/js';
 import VSvgComponent from '@/components/VSvgComponent.vue';
 import avatar from '@/assets/avatar.png';
@@ -83,7 +83,7 @@ const blocks = {
                         />
                     </a>
                     <a
-                        :href="RESUME_PATH"
+                        :href="CV_PATH"
                         download
                         class="
                         inline-block w-fit
@@ -137,8 +137,9 @@ const blocks = {
             <ul class="flex flex-wrap gap-2.5">
                 <li
                     v-for="skill in SKILLS"
-                    :key="skill"
+                    :key="skill.name"
                     class="
+                    flex items-center gap-1.5
                     text-[13px] font-semibold tracking-[.02em]
                     py-2 px-3.5 rounded-lg
                     bg-mint dark:bg-mint-dark
@@ -148,7 +149,14 @@ const blocks = {
                     hover:-translate-y-0.5
                     "
                 >
-                    {{ skill }}
+                    <VSvgComponent
+                        :icon="skill.icon"
+                        width="16px"
+                        height="16px"
+                        aria-hidden="true"
+                        class="fill-onmint dark:fill-white shrink-0 pointer-events-none"
+                    />
+                    {{ skill.name }}
                 </li>
             </ul>
         </v-paragraph>
