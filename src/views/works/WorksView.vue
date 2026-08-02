@@ -52,6 +52,7 @@ const setImage = (id: string, index: number, event: MouseEvent) => {
                          flex flex-col gap-3
                          transition-transform
                          hover:-translate-y-1 hover:shadow-[0_10px_24px_rgba(0,0,0,0.12)]
+                         focus-visible:ring-2 focus-visible:ring-mintline dark:focus-visible:ring-mintline-dark focus-visible:outline-none
                          "
                          :key=key
                          :to="to">
@@ -111,6 +112,8 @@ const setImage = (id: string, index: number, event: MouseEvent) => {
                           py-1 px-2.5 rounded-md
                           bg-tagbg dark:bg-imgbg-dark
                           text-soft dark:text-soft-dark
+                          transition-transform
+                          group-hover:-translate-y-0.5
                           "
                     >{{ tag }}</span>
                 </div>
