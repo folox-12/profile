@@ -7,7 +7,7 @@ import VDateList from '@/components/VDateList.vue';
 import { EMAIL, SKILLS, LINK_TO_GIT, LINK_TO_TELEGRAM, LINK_TO_LINKEDIN, RESUME_PATH } from '@/constants/general';
 import { mdiGithub, mdiTelegram, mdiLinkedin, mdiEmailOutline } from '@mdi/js';
 import VSvgComponent from '@/components/VSvgComponent.vue';
-import avatar from '@/assets/avatar.jpg';
+import avatar from '@/assets/avatar.png';
 const { t } = useI18n();
 useRouteFunction();
 
