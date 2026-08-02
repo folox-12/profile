@@ -30,6 +30,11 @@ createApp(App)
 
 const initialLoader = document.getElementById('initial-loader');
 if (initialLoader) {
-    initialLoader.classList.add('initial-loader--hidden');
-    setTimeout(() => initialLoader.remove(), 250);
+    setTimeout(() => {
+        initialLoader.classList.add('initial-loader--loaded');
+        setTimeout(() => {
+            initialLoader.classList.add('initial-loader--hidden');
+            setTimeout(() => initialLoader.remove(), 250);
+        }, 500);
+    }, 1000);
 }

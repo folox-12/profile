@@ -49,6 +49,30 @@
         html.dark .initial-loader__screen {
             background: linear-gradient(135deg, #4fb897, #3d9478);
         }
+        .initial-loader__check {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.5);
+            opacity: 0;
+            fill: #0d1a12;
+            transition: opacity .25s ease, transform .25s ease;
+            pointer-events: none;
+        }
+        html.dark .initial-loader__check {
+            fill: #ffffff;
+        }
+        #initial-loader.initial-loader--loaded .initial-loader__laptop {
+            animation: none;
+        }
+        #initial-loader.initial-loader--loaded .initial-loader__screen {
+            animation: none;
+            opacity: 1;
+        }
+        #initial-loader.initial-loader--loaded .initial-loader__check {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+        }
         .initial-loader__base {
             width: 112%;
             margin-left: -6%;
@@ -89,6 +113,9 @@
         <div class="initial-loader__laptop">
             <div class="initial-loader__screen-frame">
                 <div class="initial-loader__screen"></div>
+                <svg class="initial-loader__check" viewBox="0 0 24 24" width="22" height="22">
+                    <path d="M9 16.2 5.5 12.7a1 1 0 1 0-1.4 1.4l4.2 4.2a1 1 0 0 0 1.4 0l9-9a1 1 0 1 0-1.4-1.4L9 16.2Z" />
+                </svg>
             </div>
             <div class="initial-loader__base"></div>
         </div>
