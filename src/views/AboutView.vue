@@ -98,7 +98,7 @@ const blocks = {
                         focus-visible:ring-2 focus-visible:ring-mintline dark:focus-visible:ring-mintline-dark focus-visible:outline-none
                         "
                     >
-                        {{ t('hero.downloadResume') }}
+                        {{ t('hero.downloadCV') }}
                     </a>
                 </div>
             </div>
