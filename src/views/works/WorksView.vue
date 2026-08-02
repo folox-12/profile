@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useRouteFunction } from '@/composable/useRouteFunction';
 import { PROJECT_WORKS } from '@/constants/projects';
-import { computed, reactive } from 'vue';
+import { computed, reactive, onUnmounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 const { workName } = useRouteFunction();
 const { t } = useI18n();
@@ -30,6 +30,27 @@ const setImage = (id: string, index: number, event: MouseEvent) => {
     event.stopPropagation();
     carouselIndex[id] = index;
 };
+
+const hoverTimers: Record<string, ReturnType<typeof setInterval>> = {};
+
+const stopAutoplay = (id: string) => {
+    if (hoverTimers[id]) {
+        clearInterval(hoverTimers[id]);
+        delete hoverTimers[id];
+    }
+};
+
+const startAutoplay = (id: string, count: number) => {
+    if (count < 2) return;
+    stopAutoplay(id);
+    hoverTimers[id] = setInterval(() => {
+        carouselIndex[id] = (currentIndex(id) + 1) % count;
+    }, 1200);
+};
+
+onUnmounted(() => {
+    Object.keys(hoverTimers).forEach(stopAutoplay);
+});
 </script>
 
 <template>
@@ -56,7 +77,11 @@ const setImage = (id: string, index: number, event: MouseEvent) => {
                          focus-visible:ring-2 focus-visible:ring-mintline dark:focus-visible:ring-mintline-dark focus-visible:outline-none
                          "
                          :key=key
-                         :to="to">
+                         :to="to"
+                         @mouseenter="startAutoplay(id, images.length)"
+                         @mouseleave="stopAutoplay(id)"
+                         @focusin="startAutoplay(id, images.length)"
+                         @focusout="stopAutoplay(id)">
                 <div class="laptop-frame relative w-full h-[230px] flex items-end justify-center rounded-[10px] overflow-hidden pb-[18px] bg-imgbg dark:bg-imgbg-dark ring-1 ring-black/5 dark:ring-white/5">
                     <div class="laptop-tilt relative w-[220px]">
                         <div class="relative w-full aspect-[16/10] bg-[#1b1b1b] rounded-t-lg rounded-b-[3px] p-[7px_7px_9px] shadow-[0_20px_26px_rgba(0,0,0,0.25)]">
