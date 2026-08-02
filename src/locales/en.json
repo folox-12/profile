@@ -15,7 +15,8 @@
         "openMenu": "Open menu",
         "closeMenu": "Close menu",
         "prevImage": "Previous image",
-        "nextImage": "Next image"
+        "nextImage": "Next image",
+        "playVideo": "Play video"
     },
 
     "works": {

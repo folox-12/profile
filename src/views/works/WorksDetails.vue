@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { useRouteFunction } from '@/composable/useRouteFunction';
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, reactive, ref } from 'vue';
 import { getProjectWorkById, ProjectType, PROJECT_WORKS } from '@/constants/projects';
 import useTranslation from '@/composable/useTranslation';
 import { useI18n } from 'vue-i18n';
 import VSvgComponent from '@/components/VSvgComponent.vue';
-import { mdiOpenInNew } from '@mdi/js';
+import { mdiOpenInNew, mdiPlay } from '@mdi/js';
 const { t } = useI18n();
 
 const { workName } = useRouteFunction();
@@ -32,6 +32,8 @@ const nextProject = computed<ProjectType | undefined>(() => {
 });
 
 const stackList = computed(() => details.value?.stack?.split(',').map(s => s.trim()) ?? []);
+
+const playingVideo = reactive<Record<number, boolean>>({});
 
 onMounted(() => {
     currentProject.value = getProjectWorkById(title.value.value as string);
@@ -124,26 +126,61 @@ onMounted(() => {
     </div>
 
     <div
-        v-if="currentProject?.images?.length"
+        v-if="currentProject?.media?.length"
         class="grid gap-4 sm:grid-cols-2"
     >
         <div
-            v-for="(image, key) in currentProject?.images"
+            v-for="(item, key) in currentProject?.media"
             :key="key"
             class="
+            relative
             w-full aspect-video rounded-[14px] overflow-hidden
             border border-black/10 dark:border-white/[.14]
             shadow-[0_1px_2px_rgba(0,0,0,0.04)]
             transition-all duration-300
             hover:-translate-y-1 hover:shadow-[0_14px_28px_rgba(0,0,0,0.12)]
             "
-            :class="key === 0 ? 'sm:col-span-2' : ''"
+            :class="key === 0 || item.type === 'video' ? 'sm:col-span-2' : ''"
         >
             <img
+                v-if="item.type === 'image'"
                 class="w-full h-full object-cover"
-                :src="image"
+                :src="item.src"
                 :alt="`${currentProject?.name} — ${key + 1}`"
             />
+            <template v-else>
+                <video
+                    v-if="playingVideo[key]"
+                    class="w-full h-full object-cover"
+                    :src="item.src"
+                    :poster="item.poster"
+                    controls
+                    autoplay
+                ></video>
+                <button
+                    v-else
+                    type="button"
+                    class="group/play relative block w-full h-full focus-visible:ring-2 focus-visible:ring-mintline dark:focus-visible:ring-mintline-dark focus-visible:outline-none"
+                    :aria-label="`${t('general.playVideo')}: ${currentProject?.name}`"
+                    @click="playingVideo[key] = true"
+                >
+                    <img
+                        class="w-full h-full object-cover"
+                        :src="item.poster"
+                        :alt="`${currentProject?.name} — video`"
+                    />
+                    <span class="absolute inset-0 flex items-center justify-center bg-black/25 transition-colors group-hover/play:bg-black/35">
+                        <span class="flex items-center justify-center w-14 h-14 rounded-full bg-mint dark:bg-mint-dark border border-mintline dark:border-mintline-dark shadow-[0_2px_0_#7cc79c] dark:shadow-[0_2px_0_#3d9478] transition-transform group-hover/play:scale-105">
+                            <VSvgComponent
+                                :icon="mdiPlay"
+                                width="26px"
+                                height="26px"
+                                class="fill-onmint translate-x-0.5"
+                            />
+                        </span>
+                    </span>
+                </button>
+            </template>
         </div>
     </div>
 

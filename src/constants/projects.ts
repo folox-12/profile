@@ -18,6 +18,19 @@ type DetailedInfo = {
     role?: string,
     period?: string,
 }
+export type ImageMedia = {
+    type: 'image',
+    src: string,
+}
+export type VideoMedia = {
+    type: 'video',
+    src: string,
+    poster: string,
+}
+export type MediaItem = ImageMedia | VideoMedia;
+
+const image = (src: string): ImageMedia => ({ type: 'image', src });
+
 export type ProjectType = {
     id: string,
     name: string,
@@ -25,7 +38,7 @@ export type ProjectType = {
     shortDescription:string;
     description: string,
     preview: string,
-    images: string[],
+    media: MediaItem[],
     year?: number,
     details?: DetailedInfo,
 }
@@ -38,7 +51,7 @@ export const PROJECT_WORKS: ProjectType[] = [
         shortDescription: 'works.kiosk.shortDescription',
         description: 'works.kiosk.description',
         preview: kioskImage,
-        images: [kioskImage, kioskThanks],
+        media: [image(kioskImage), image(kioskThanks)],
         year: 2024,
         details: {
             stack: 'HTML, CSS, JavaScript, Node.js',
@@ -53,7 +66,7 @@ export const PROJECT_WORKS: ProjectType[] = [
         shortDescription: 'works.gym.shortDescription',
         description: 'works.gym.description',
         preview: gymImage,
-        images: [gymImage],
+        media: [image(gymImage)],
         year: 2023,
         details: {
             stack: 'HTML, CSS, JavaScript, Nuxt2, Pinia, Node.js, Express.js, Sequelize',
@@ -71,7 +84,7 @@ export const PROJECT_WORKS: ProjectType[] = [
         shortDescription: 'works.chop.shortDescription',
         description: 'works.chop.description',
         preview: chop1,
-        images: [chop1, chop3, chop2, chop4],
+        media: [image(chop1), image(chop3), image(chop2), image(chop4)],
         year: 2026,
         details: {
             stack: 'React, Tauri, Tailwind CSS, Rust, TypeScript',

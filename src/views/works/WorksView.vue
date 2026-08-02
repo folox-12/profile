@@ -65,6 +65,18 @@ const startAutoplay = (id: string, count: number) => {
     }, 1200);
 };
 
+const hovering = reactive<Record<string, boolean>>({});
+
+const activateCard = (id: string, count: number) => {
+    hovering[id] = true;
+    startAutoplay(id, count);
+};
+
+const deactivateCard = (id: string) => {
+    hovering[id] = false;
+    stopAutoplay(id);
+};
+
 onUnmounted(() => {
     Object.keys(hoverTimers).forEach(stopAutoplay);
 });
@@ -81,7 +93,7 @@ onUnmounted(() => {
             {{ workName }}
         </span>
         <div class="works grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-[22px]">
-            <router-link v-for="({ id, name, to, images, shortDescription, tags, primaryTech }, key) in ProjectWithDescription"
+            <router-link v-for="({ id, name, to, media, shortDescription, tags, primaryTech }, key) in ProjectWithDescription"
                          class="
                          group
                          bg-card dark:bg-card-dark
@@ -95,44 +107,54 @@ onUnmounted(() => {
                          "
                          :key=key
                          :to="to"
-                         @mouseenter="startAutoplay(id, images.length)"
-                         @mouseleave="stopAutoplay(id)"
-                         @focusin="startAutoplay(id, images.length)"
-                         @focusout="stopAutoplay(id)">
+                         @mouseenter="activateCard(id, media.length)"
+                         @mouseleave="deactivateCard(id)"
+                         @focusin="activateCard(id, media.length)"
+                         @focusout="deactivateCard(id)">
                 <div class="laptop-frame relative w-full h-[230px] flex items-end justify-center rounded-[10px] overflow-hidden pb-[18px] bg-imgbg dark:bg-imgbg-dark ring-1 ring-black/5 dark:ring-white/5">
                     <div class="laptop-tilt relative w-[220px]">
                         <div class="relative w-full aspect-[16/10] bg-[#1b1b1b] rounded-t-lg rounded-b-[3px] p-[7px_7px_9px] shadow-[0_20px_26px_rgba(0,0,0,0.25)]">
                             <div class="relative w-full h-full rounded-[3px] overflow-hidden bg-black">
-                                <img v-for="(image, imgKey) in images"
-                                     :key="imgKey"
-                                     :alt="name"
-                                     class="absolute inset-0 w-full h-full object-cover transition-opacity duration-300"
-                                     :class="imgKey === currentIndex(id) ? 'opacity-100' : 'opacity-0 pointer-events-none'"
-                                     :src="image">
+                                <template v-for="(item, imgKey) in media" :key="imgKey">
+                                    <video v-if="item.type === 'video' && imgKey === currentIndex(id) && hovering[id]"
+                                           class="absolute inset-0 w-full h-full object-cover"
+                                           :src="item.src"
+                                           :poster="item.poster"
+                                           muted
+                                           loop
+                                           playsinline
+                                           autoplay
+                                    ></video>
+                                    <img v-else
+                                         :alt="name"
+                                         class="absolute inset-0 w-full h-full object-cover transition-opacity duration-300"
+                                         :class="imgKey === currentIndex(id) ? 'opacity-100' : 'opacity-0 pointer-events-none'"
+                                         :src="item.type === 'video' ? item.poster : item.src">
+                                </template>
                             </div>
                         </div>
                         <div class="w-[112%] -ml-[6%] h-[10px] bg-gradient-to-b from-[#2b2b2b] to-[#161616] rounded-b-md shadow-[0_3px_6px_rgba(0,0,0,0.3)]"></div>
                     </div>
 
-                    <template v-if="images.length > 1">
+                    <template v-if="media.length > 1">
                         <div
                             role="button"
                             tabindex="0"
                             :aria-label="`${name} — ${t('general.prevImage')}`"
                             class="absolute left-1.5 top-[44%] -translate-y-1/2 w-7 h-7 rounded-full bg-black/45 text-white flex items-center justify-center cursor-pointer text-sm z-[3] focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none"
-                            @click="(e) => shiftImage(id, images.length, -1, e)"
-                            @keydown.enter="(e) => shiftImage(id, images.length, -1, e)"
+                            @click="(e) => shiftImage(id, media.length, -1, e)"
+                            @keydown.enter="(e) => shiftImage(id, media.length, -1, e)"
                         >‹</div>
                         <div
                             role="button"
                             tabindex="0"
                             :aria-label="`${name} — ${t('general.nextImage')}`"
                             class="absolute right-1.5 top-[44%] -translate-y-1/2 w-7 h-7 rounded-full bg-black/45 text-white flex items-center justify-center cursor-pointer text-sm z-[3] focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none"
-                            @click="(e) => shiftImage(id, images.length, 1, e)"
-                            @keydown.enter="(e) => shiftImage(id, images.length, 1, e)"
+                            @click="(e) => shiftImage(id, media.length, 1, e)"
+                            @keydown.enter="(e) => shiftImage(id, media.length, 1, e)"
                         >›</div>
                         <div class="absolute bottom-1 left-0 right-0 flex justify-center gap-1.5 z-[3]">
-                            <div v-for="(image, dotKey) in images"
+                            <div v-for="(item, dotKey) in media"
                                  :key="dotKey"
                                  :aria-label="`${dotKey + 1}`"
                                  class="w-1.5 h-1.5 rounded-full cursor-pointer focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none"
