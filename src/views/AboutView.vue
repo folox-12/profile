@@ -57,6 +57,8 @@ const blocks = {
             <img
                 :src="avatar"
                 :alt="t('hero.name')"
+                width="96"
+                height="96"
                 class="w-24 h-24 rounded-full object-cover border border-black/10 dark:border-white/[.14] shrink-0"
             >
             <div class="flex flex-col items-center sm:items-start">
@@ -92,7 +94,7 @@ const blocks = {
                         py-2 px-4 rounded-[10px]
                         text-sm font-bold
                         bg-mint dark:bg-mint-dark
-                        text-onmint dark:text-white
+                        text-onmint
                         border border-mintline dark:border-mintline-dark
                         shadow-[0_2px_0_#7cc79c] dark:shadow-[0_2px_0_#3d9478]
                         hover:brightness-95

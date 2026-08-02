@@ -75,7 +75,7 @@ const setImage = (id: string, index: number, event: MouseEvent) => {
                         <div
                             role="button"
                             tabindex="0"
-                            :aria-label="t('general.prevImage')"
+                            :aria-label="`${name} — ${t('general.prevImage')}`"
                             class="absolute left-1.5 top-[44%] -translate-y-1/2 w-7 h-7 rounded-full bg-black/45 text-white flex items-center justify-center cursor-pointer text-sm z-[3] focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none"
                             @click="(e) => shiftImage(id, images.length, -1, e)"
                             @keydown.enter="(e) => shiftImage(id, images.length, -1, e)"
@@ -83,7 +83,7 @@ const setImage = (id: string, index: number, event: MouseEvent) => {
                         <div
                             role="button"
                             tabindex="0"
-                            :aria-label="t('general.nextImage')"
+                            :aria-label="`${name} — ${t('general.nextImage')}`"
                             class="absolute right-1.5 top-[44%] -translate-y-1/2 w-7 h-7 rounded-full bg-black/45 text-white flex items-center justify-center cursor-pointer text-sm z-[3] focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none"
                             @click="(e) => shiftImage(id, images.length, 1, e)"
                             @keydown.enter="(e) => shiftImage(id, images.length, 1, e)"
@@ -91,13 +91,10 @@ const setImage = (id: string, index: number, event: MouseEvent) => {
                         <div class="absolute bottom-1 left-0 right-0 flex justify-center gap-1.5 z-[3]">
                             <div v-for="(image, dotKey) in images"
                                  :key="dotKey"
-                                 role="button"
-                                 tabindex="0"
                                  :aria-label="`${dotKey + 1}`"
                                  class="w-1.5 h-1.5 rounded-full cursor-pointer focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none"
                                  :class="dotKey === currentIndex(id) ? 'bg-ink dark:bg-ink-dark' : 'bg-black/20 dark:bg-white/20'"
                                  @click="(e) => setImage(id, dotKey, e)"
-                                 @keydown.enter="(e) => setImage(id, dotKey, e)"
                             ></div>
                         </div>
                     </template>

@@ -105,28 +105,17 @@ const navigateTo = (path: string): void => {
                 >EN</span>
             </div>
             <VSvgComponent
-                v-if="isDark"
                 v-motion-slide-bottom
-                fill="yellow"
-                :icon="mdiWhiteBalanceSunny"
+                :fill="isDark ? 'yellow' : 'MediumSlateBlue'"
+                :icon="isDark ? mdiWhiteBalanceSunny : mdiMoonWaningCrescent"
                 :aria-label="t('general.toggleTheme')"
                 role="button"
                 tabindex="0"
+                class="focus-visible:ring-2 focus-visible:ring-mintline dark:focus-visible:ring-mintline-dark focus-visible:outline-none rounded-full"
                 @click="toggleTheme"
                 @keydown.enter="toggleTheme"
             />
-            <VSvgComponent
-                v-else
-                v-motion-slide-bottom
-                fill="MediumSlateBlue"
-                :icon="mdiMoonWaningCrescent"
-                :aria-label="t('general.toggleTheme')"
-                role="button"
-                tabindex="0"
-                @click="toggleTheme"
-                @keydown.enter="toggleTheme"
-            />
-            <VSvgComponent class="md:hidden ml-2 dark:fill-white"
+            <VSvgComponent class="md:hidden ml-2 dark:fill-white focus-visible:ring-2 focus-visible:ring-mintline dark:focus-visible:ring-mintline-dark focus-visible:outline-none rounded-full"
                            viewBox="0 0 24 24"
                            :icon="mdiMenu"
                            :aria-label="t('general.openMenu')"
@@ -174,7 +163,7 @@ const navigateTo = (path: string): void => {
                         {{ t('general.source') }}
                     </a>
                     <VSvgComponent
-                        class="absolute top-2 right-2"
+                        class="absolute top-2 right-2 focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none rounded-full"
                         fill="white"
                         :icon="mdiClose"
                         :aria-label="t('general.closeMenu')"
