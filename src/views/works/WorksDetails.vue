@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useRouteFunction } from '@/composable/useRouteFunction';
 import { computed, onMounted, ref } from 'vue';
-import { getProjectWorkById, ProjectType } from '@/constants/projects';
+import { getProjectWorkById, ProjectType, PROJECT_WORKS } from '@/constants/projects';
 import useTranslation from '@/composable/useTranslation';
 import { useI18n } from 'vue-i18n';
 const { t } = useI18n();
@@ -14,6 +14,20 @@ const title = computed(() => workName);
 const currentProject = ref<ProjectType | undefined>();
 
 const details = computed(() => currentProject.value?.details);
+
+const currentIndex = computed(() => PROJECT_WORKS.findIndex(p => p.id === currentProject.value?.id));
+
+const prevProject = computed<ProjectType | undefined>(() => {
+    if (currentIndex.value === -1 || PROJECT_WORKS.length < 2) return undefined;
+    const index = (currentIndex.value - 1 + PROJECT_WORKS.length) % PROJECT_WORKS.length;
+    return PROJECT_WORKS[index];
+});
+
+const nextProject = computed<ProjectType | undefined>(() => {
+    if (currentIndex.value === -1 || PROJECT_WORKS.length < 2) return undefined;
+    const index = (currentIndex.value + 1) % PROJECT_WORKS.length;
+    return PROJECT_WORKS[index];
+});
 
 const stackList = computed(() => details.value?.stack?.split(',').map(s => s.trim()) ?? []);
 
@@ -99,5 +113,38 @@ onMounted(() => {
                 :src="image"
             />
         </div>
+    </div>
+
+    <div
+        v-if="prevProject || nextProject"
+        class="flex justify-between items-center mt-8 pt-6 border-t border-black/10 dark:border-white/[.14]"
+    >
+        <router-link
+            v-if="prevProject"
+            :to="prevProject.to"
+            class="
+            flex items-center gap-1.5 text-sm font-semibold
+            hover:underline
+            focus-visible:ring-2 focus-visible:ring-mintline dark:focus-visible:ring-mintline-dark focus-visible:outline-none rounded
+            "
+        >
+            <span aria-hidden="true">←</span>
+            <span class="sr-only">{{ t('general.prevProject') }}:</span>
+            {{ prevProject.name }}
+        </router-link>
+        <span v-else></span>
+        <router-link
+            v-if="nextProject"
+            :to="nextProject.to"
+            class="
+            flex items-center gap-1.5 text-sm font-semibold
+            hover:underline
+            focus-visible:ring-2 focus-visible:ring-mintline dark:focus-visible:ring-mintline-dark focus-visible:outline-none rounded
+            "
+        >
+            <span class="sr-only">{{ t('general.nextProject') }}:</span>
+            {{ nextProject.name }}
+            <span aria-hidden="true">→</span>
+        </router-link>
     </div>
 </template>
