@@ -11,7 +11,12 @@
     },
     "hero": {
         "name": "Васильев Сергей",
-        "role": "Frontend Developer"
+        "role": "Frontend Developer",
+        "downloadResume": "Скачать резюме",
+        "socialGithub": "GitHub",
+        "socialTelegram": "Telegram",
+        "socialLinkedin": "LinkedIn",
+        "socialEmail": "Email"
     },
     "aboutText": "Frontend разработчик. Разрабатывал на фреймворке - Vue (Nuxt2), а также разрабатывал компоненты на React (функциональный стиль). Веб-разработкой увлекаюсь с 2019 года. Активно занимаюсь frontend-разработкой с февраля 2022.",
     "experience": "Опыт работы",
@@ -22,7 +27,16 @@
         "works": "Проекты",
         "stack": "СТЕК",
         "site": "Сайт",
-        "code": "Исходный код"
+        "code": "Исходный код",
+        "role": "РОЛЬ",
+        "period": "ПЕРИОД",
+        "prevProject": "Предыдущий проект",
+        "nextProject": "Следующий проект",
+        "toggleTheme": "Переключить тему",
+        "openMenu": "Открыть меню",
+        "closeMenu": "Закрыть меню",
+        "prevImage": "Предыдущее изображение",
+        "nextImage": "Следующее изображение"
     },
     "works": {
         "kiosk": {

@@ -6,7 +6,16 @@
         "now": "Now",
         "stack": "STACK",
         "site": "Site",
-        "code": "Source code"
+        "code": "Source code",
+        "role": "ROLE",
+        "period": "PERIOD",
+        "prevProject": "Previous project",
+        "nextProject": "Next project",
+        "toggleTheme": "Toggle theme",
+        "openMenu": "Open menu",
+        "closeMenu": "Close menu",
+        "prevImage": "Previous image",
+        "nextImage": "Next image"
     },
 
     "works": {
@@ -31,7 +40,12 @@
     },
     "hero": {
         "name": "Sergey Vasilev",
-        "role": "Frontend Developer"
+        "role": "Frontend Developer",
+        "downloadResume": "Download resume",
+        "socialGithub": "GitHub",
+        "socialTelegram": "Telegram",
+        "socialLinkedin": "LinkedIn",
+        "socialEmail": "Email"
     },
 
     "BIO": {
