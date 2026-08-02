@@ -5,11 +5,21 @@ import { computed, reactive, onUnmounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 const { workName } = useRouteFunction();
 const { t } = useI18n();
+
+const JS_TECH = new Set([
+    'javascript', 'typescript', 'react', 'vue', 'nuxt', 'nuxt2',
+    'node.js', 'express.js', 'pinia', 'zustand'
+]);
+
+const isJsTech = (tech: string) => JS_TECH.has(tech.toLowerCase());
+
 const ProjectWithDescription = PROJECT_WORKS.map(({ shortDescription, description, ...other }) => {
+    const stackList = other.details?.stack?.split(',').map(s => s.trim()) ?? [];
+    const sortedStack = [...stackList].sort((a, b) => Number(isJsTech(b)) - Number(isJsTech(a)));
     return {
         shortDescription: computed(() => t(shortDescription)),
         description: computed(() => t(description)),
-        tags: other.details?.stack?.split(',').map(s => s.trim()).slice(0, 3) ?? [],
+        tags: sortedStack.slice(0, 3),
         ...other
     };
 });
@@ -128,7 +138,7 @@ onUnmounted(() => {
                 <p class="text-lg font-bold font-serif tracking-tight truncate">{{ name }}</p>
                 <p class="text-sm leading-[1.55] text-soft dark:text-soft-dark flex-1 line-clamp-2">{{ shortDescription }}</p>
                 <div v-if="tags.length" class="flex flex-wrap gap-1.5">
-                    <span v-for="(tag, tagIndex) in tags"
+                    <span v-for="tag in tags"
                           :key="tag"
                           class="
                           text-[11px] font-bold uppercase tracking-[.03em]
@@ -136,7 +146,7 @@ onUnmounted(() => {
                           transition-transform
                           group-hover:-translate-y-0.5
                           "
-                          :class="tagIndex === 0
+                          :class="isJsTech(tag)
                               ? 'bg-mint dark:bg-mint-dark text-onmint dark:text-white border-mintline dark:border-mintline-dark'
                               : 'bg-tagbg dark:bg-imgbg-dark text-soft dark:text-soft-dark border-transparent'"
                     >{{ tag }}</span>
