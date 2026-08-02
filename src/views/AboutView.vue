@@ -42,10 +42,6 @@ const blocks = {
 
     skills: {
         title: computed(() => t('about.skills'))
-    },
-
-    contacts: {
-        title: computed(() => t('about.contacts'))
     }
 
 };
@@ -59,7 +55,7 @@ const blocks = {
                 :alt="t('hero.name')"
                 width="96"
                 height="96"
-                class="w-24 h-24 rounded-full object-cover border border-black/10 dark:border-white/[.14] shrink-0"
+                class="w-24 h-24 rounded-full object-cover object-[center_15%] border border-black/10 dark:border-white/[.14] shrink-0"
             >
             <div class="flex flex-col items-center sm:items-start">
                 <p class="text-[32px] font-bold leading-tight">{{ t('hero.name') }}</p>
@@ -155,16 +151,6 @@ const blocks = {
                     {{ skill }}
                 </li>
             </ul>
-        </v-paragraph>
-        <v-paragraph
-            :title="blocks.contacts.title"
-        >
-            <a
-                :href="`mailto:${EMAIL}`"
-                class="inline-block text-[15px] underline underline-offset-[3px]"
-            >
-                {{ EMAIL }}
-            </a>
         </v-paragraph>
     </div>
 </template>
