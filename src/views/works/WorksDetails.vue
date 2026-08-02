@@ -111,6 +111,7 @@ onMounted(() => {
             <img
                 class="w-full h-full object-cover"
                 :src="image"
+                :alt="`${currentProject?.name} — ${key + 1}`"
             />
         </div>
     </div>

@@ -109,19 +109,31 @@ const navigateTo = (path: string): void => {
                 v-motion-slide-bottom
                 fill="yellow"
                 :icon="mdiWhiteBalanceSunny"
+                :aria-label="t('general.toggleTheme')"
+                role="button"
+                tabindex="0"
                 @click="toggleTheme"
+                @keydown.enter="toggleTheme"
             />
             <VSvgComponent
                 v-else
                 v-motion-slide-bottom
                 fill="MediumSlateBlue"
                 :icon="mdiMoonWaningCrescent"
+                :aria-label="t('general.toggleTheme')"
+                role="button"
+                tabindex="0"
                 @click="toggleTheme"
+                @keydown.enter="toggleTheme"
             />
             <VSvgComponent class="md:hidden ml-2 dark:fill-white"
                            viewBox="0 0 24 24"
                            :icon="mdiMenu"
+                           :aria-label="t('general.openMenu')"
+                           role="button"
+                           tabindex="0"
                            @click="isMenuOpen = true"
+                           @keydown.enter="isMenuOpen = true"
             />
 
             <div
@@ -165,7 +177,11 @@ const navigateTo = (path: string): void => {
                         class="absolute top-2 right-2"
                         fill="white"
                         :icon="mdiClose"
+                        :aria-label="t('general.closeMenu')"
+                        role="button"
+                        tabindex="0"
                         @click="isMenuOpen = false"
+                        @keydown.enter="isMenuOpen = false"
                     />
                 </div>
             </div>
