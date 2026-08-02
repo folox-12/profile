@@ -8,7 +8,7 @@ import { English, Russian } from '@/locales';
 import VSvgComponent from './VSvgComponent.vue';
 import russianFlag from '@/assets/icons/russian_flag.vue';
 import engFlag from '@/assets/icons/eng_flag.vue';
-import { mdiWhiteBalanceSunny, mdiMoonWaningCrescent, mdiMenu, mdiClose } from '@mdi/js';
+import { mdiWhiteBalanceSunny, mdiMoonWaningCrescent, mdiMenu, mdiClose, mdiOpenInNew } from '@mdi/js';
 
 const { t, locale } = useI18n();
 const { toggleTheme, isThemeDark: isDark } = useChangeTheme();
@@ -80,11 +80,23 @@ const navigateTo = (path: string): void => {
             >
                 {{ t(item.name as string) }}
             </router-link>
-            <a class="py-2.5 px-4 rounded-lg font-medium text-soft dark:text-soft-dark hover:underline"
+            <a class="
+               flex items-center gap-1
+               py-2.5 px-4 rounded-lg font-medium
+               text-soft dark:text-soft-dark
+               hover:underline
+               "
                target="_blank"
+               rel="noopener noreferrer"
                :href="LINK_TO_GIT"
             >
                 {{ t('general.source') }}
+                <VSvgComponent
+                    :icon="mdiOpenInNew"
+                    width="14px"
+                    height="14px"
+                    class="fill-soft dark:fill-soft-dark"
+                />
             </a>
         </div>
         <div class="grow flex justify-end items-center gap-3.5">
@@ -157,10 +169,18 @@ const navigateTo = (path: string): void => {
                         {{ t(item.name as string) }}
                     </span>
                     <a target="_blank"
+                       rel="noopener noreferrer"
+                       class="flex items-center gap-1.5"
                        :class="menuMobileLinksClass"
                        :href="LINK_TO_GIT"
                     >
                         {{ t('general.source') }}
+                        <VSvgComponent
+                            :icon="mdiOpenInNew"
+                            width="18px"
+                            height="18px"
+                            fill="white"
+                        />
                     </a>
                     <VSvgComponent
                         class="absolute top-2 right-2 focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none rounded-full"
