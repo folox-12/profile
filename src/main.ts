@@ -27,3 +27,9 @@ createApp(App)
     .use(i18n)
     .use(MotionPlugin)
     .mount('#app');
+
+const initialLoader = document.getElementById('initial-loader');
+if (initialLoader) {
+    initialLoader.classList.add('initial-loader--hidden');
+    setTimeout(() => initialLoader.remove(), 250);
+}

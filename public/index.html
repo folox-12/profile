@@ -7,6 +7,71 @@
 
     <link rel="icon" href="<%= BASE_URL %>main.ico">
     <title>Homepage</title>
+    <style>
+        #initial-loader {
+            position: fixed;
+            inset: 0;
+            z-index: 999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #fbf3e6;
+            transition: opacity .25s ease;
+        }
+        html.dark #initial-loader {
+            background: #22262b;
+        }
+        #initial-loader.initial-loader--hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        .initial-loader__laptop {
+            position: relative;
+            width: 64px;
+            animation: initial-loader-bob 1.4s ease-in-out infinite;
+        }
+        .initial-loader__screen-frame {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 16 / 10;
+            background: #1b1b1b;
+            border-radius: 8px 8px 3px 3px;
+            padding: 4px 4px 5px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.25);
+        }
+        .initial-loader__screen {
+            width: 100%;
+            height: 100%;
+            border-radius: 2px;
+            background: linear-gradient(135deg, #b7ecd1, #7cc79c);
+            animation: initial-loader-glow 1.4s ease-in-out infinite;
+        }
+        html.dark .initial-loader__screen {
+            background: linear-gradient(135deg, #4fb897, #3d9478);
+        }
+        .initial-loader__base {
+            width: 112%;
+            margin-left: -6%;
+            height: 5px;
+            background: linear-gradient(#2b2b2b, #161616);
+            border-radius: 0 0 6px 6px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        @keyframes initial-loader-bob {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
+        }
+        @keyframes initial-loader-glow {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .initial-loader__laptop,
+            .initial-loader__screen {
+                animation: none;
+            }
+        }
+    </style>
   </head>
   <body>
     <script>
@@ -20,6 +85,14 @@
       <strong>We're sorry but <%= htmlWebpackPlugin.options.title %> doesn't work properly without JavaScript enabled. Please enable it to continue.</strong>
     </noscript>
     <div id="app"></div>
+    <div id="initial-loader">
+        <div class="initial-loader__laptop">
+            <div class="initial-loader__screen-frame">
+                <div class="initial-loader__screen"></div>
+            </div>
+            <div class="initial-loader__base"></div>
+        </div>
+    </div>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Vollkorn:ital,wght@0,400..900;1,400..900&display=swap');
         html {
