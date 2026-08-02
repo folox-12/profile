@@ -46,6 +46,18 @@ onMounted(() => {
     </p>
 
     <div v-if="details" class="flex flex-wrap gap-[22px] items-baseline mb-[26px]">
+        <div v-if="details.role" class="flex items-center gap-2.5">
+            <span class="text-[11px] font-bold uppercase tracking-[.04em] text-soft dark:text-soft-dark">
+                {{ t('general.role') }}
+            </span>
+            <span class="text-sm">{{ details.role }}</span>
+        </div>
+        <div v-if="details.period" class="flex items-center gap-2.5">
+            <span class="text-[11px] font-bold uppercase tracking-[.04em] text-soft dark:text-soft-dark">
+                {{ t('general.period') }}
+            </span>
+            <span class="text-sm">{{ details.period }}</span>
+        </div>
         <div v-if="stackList.length" class="flex items-center gap-2.5">
             <span class="text-[11px] font-bold uppercase tracking-[.04em] text-soft dark:text-soft-dark">
                 {{ t('general.stack') }}
