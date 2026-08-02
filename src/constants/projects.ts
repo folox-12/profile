@@ -8,9 +8,13 @@ import chop2 from '@/assets/works/chop/chop2.png';
 import chop3 from '@/assets/works/chop/chop3.png';
 import chop4 from '@/assets/works/chop/chop4.png';
 
+type WebsiteLink = {
+    url: string,
+    label?: string,
+}
 type DetailedInfo = {
     stack?: string,
-    website?: string[],
+    website?: WebsiteLink[],
     role?: string,
     period?: string,
 }
@@ -38,7 +42,7 @@ export const PROJECT_WORKS: ProjectType[] = [
         year: 2024,
         details: {
             stack: 'HTML, CSS, JavaScript, Node.js',
-            website: ['https://github.com/folox-12/kiosk'],
+            website: [{ url: 'https://github.com/folox-12/kiosk' }],
             period: '2024'
         }
     },
@@ -53,7 +57,10 @@ export const PROJECT_WORKS: ProjectType[] = [
         year: 2023,
         details: {
             stack: 'HTML, CSS, JavaScript, Nuxt2, Pinia, Node.js, Express.js, Sequelize',
-            website: ['https://github.com/folox-12/gym_front', 'https://github.com/folox-12/gym_front'],
+            website: [
+                { url: 'https://github.com/folox-12/gym_front', label: 'Frontend' },
+                { url: 'https://github.com/folox-12/gym_back', label: 'Backend' }
+            ],
             period: '2023'
         }
     },
@@ -68,7 +75,7 @@ export const PROJECT_WORKS: ProjectType[] = [
         year: 2026,
         details: {
             stack: 'React, Tauri, Tailwind CSS, Rust, TypeScript',
-            website: ['https://github.com/folox-12/CHOP-Gen-App'],
+            website: [{ url: 'https://github.com/folox-12/CHOP-Gen-App' }],
             period: '2026'
         }
     }

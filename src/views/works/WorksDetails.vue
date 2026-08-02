@@ -96,7 +96,7 @@ onMounted(() => {
             <a
                 v-for="(link, index) in details.website"
                 :key="index"
-                :href="link"
+                :href="link.url"
                 target="_blank"
                 rel="noopener noreferrer"
                 class="
@@ -112,7 +112,7 @@ onMounted(() => {
                 focus-visible:ring-2 focus-visible:ring-mintline dark:focus-visible:ring-mintline-dark focus-visible:outline-none
                 "
             >
-                {{ t('general.code') }}
+                {{ details.website.length > 1 ? (link.label || `${t('general.code')} ${index + 1}`) : t('general.code') }}
                 <VSvgComponent
                     :icon="mdiOpenInNew"
                     width="14px"
