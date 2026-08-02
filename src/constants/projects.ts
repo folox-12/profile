@@ -2,6 +2,8 @@ import kioskImage from '@/assets/works/kiosk/kiosk.png';
 import kioskThanks from '@/assets/works/kiosk/thanks.png';
 
 import gymImage from '@/assets/works/gym/gym.png';
+import gymDemoVideo from '@/assets/works/gym/gym-demo.mp4';
+import gymDemoPoster from '@/assets/works/gym/gym-demo-poster.jpg';
 
 import chop1 from '@/assets/works/chop/chop1.png';
 import chop2 from '@/assets/works/chop/chop2.png';
@@ -66,7 +68,7 @@ export const PROJECT_WORKS: ProjectType[] = [
         shortDescription: 'works.gym.shortDescription',
         description: 'works.gym.description',
         preview: gymImage,
-        media: [image(gymImage)],
+        media: [{ type: 'video', src: gymDemoVideo, poster: gymDemoPoster }, image(gymImage)],
         year: 2023,
         details: {
             stack: 'HTML, CSS, JavaScript, Nuxt2, Pinia, Node.js, Express.js, Sequelize',
