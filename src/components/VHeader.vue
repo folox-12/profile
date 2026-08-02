@@ -186,8 +186,8 @@ const navigateTo = (path: string): void => {
 }
 .router-link-exact-active {
   font-weight: 700;
-  background-color: theme('colors.mint / 20%');
-  color: theme('colors.ink');
+  background-color: theme('colors.mint');
+  color: theme('colors.onmint');
 }
 .dark .router-link-exact-active {
   background-color: theme('colors.nav-active-dark');
