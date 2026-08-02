@@ -61,13 +61,11 @@ onMounted(() => {
             {{ currentProject.year }}
         </span>
     </div>
-    <p v-if="details?.role || details?.period" class="text-sm text-soft dark:text-soft-dark mb-4">
-        <span v-if="details.role">{{ details.role }}</span>
-        <span v-if="details.role && details.period"> · </span>
-        <span v-if="details.period">{{ details.period }}</span>
+    <p v-if="details?.role" class="text-sm text-soft dark:text-soft-dark mb-4">
+        {{ details.role }}
     </p>
 
-    <p class="text-[16px] leading-[1.75] max-w-[640px] text-soft dark:text-soft-dark mb-7">
+    <p class="text-[16px] leading-[1.75] text-soft dark:text-soft-dark mb-7">
         {{ getTranslatedDescription(currentProject?.description) }}
     </p>
 
