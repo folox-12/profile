@@ -6,20 +6,27 @@ import { useI18n } from 'vue-i18n';
 const { workName } = useRouteFunction();
 const { t } = useI18n();
 
-const JS_TECH = new Set([
-    'javascript', 'typescript', 'react', 'vue', 'nuxt', 'nuxt2',
-    'node.js', 'express.js', 'pinia', 'zustand'
+const JS_FRAMEWORKS = new Set([
+    'react', 'vue', 'nuxt', 'nuxt2', 'node.js', 'express.js', 'pinia', 'zustand'
 ]);
+const JS_LANGUAGE = new Set(['javascript', 'typescript']);
 
-const isJsTech = (tech: string) => JS_TECH.has(tech.toLowerCase());
+const techPriority = (tech: string): number => {
+    const lower = tech.toLowerCase();
+    if (JS_FRAMEWORKS.has(lower)) return 2;
+    if (JS_LANGUAGE.has(lower)) return 1;
+    return 0;
+};
 
 const ProjectWithDescription = PROJECT_WORKS.map(({ shortDescription, description, ...other }) => {
     const stackList = other.details?.stack?.split(',').map(s => s.trim()) ?? [];
-    const sortedStack = [...stackList].sort((a, b) => Number(isJsTech(b)) - Number(isJsTech(a)));
+    const sortedStack = [...stackList].sort((a, b) => techPriority(b) - techPriority(a));
+    const primaryTech = techPriority(sortedStack[0] ?? '') > 0 ? sortedStack[0] : undefined;
     return {
         shortDescription: computed(() => t(shortDescription)),
         description: computed(() => t(description)),
         tags: sortedStack.slice(0, 3),
+        primaryTech,
         ...other
     };
 });
@@ -74,7 +81,7 @@ onUnmounted(() => {
             {{ workName }}
         </span>
         <div class="works grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-[22px]">
-            <router-link v-for="({ id, name, to, images, shortDescription, tags }, key) in ProjectWithDescription"
+            <router-link v-for="({ id, name, to, images, shortDescription, tags, primaryTech }, key) in ProjectWithDescription"
                          class="
                          group
                          bg-card dark:bg-card-dark
@@ -146,7 +153,7 @@ onUnmounted(() => {
                           transition-transform
                           group-hover:-translate-y-0.5
                           "
-                          :class="isJsTech(tag)
+                          :class="tag === primaryTech
                               ? 'bg-mint dark:bg-mint-dark text-onmint dark:text-white border-mintline dark:border-mintline-dark'
                               : 'bg-tagbg dark:bg-imgbg-dark text-soft dark:text-soft-dark border-transparent'"
                     >{{ tag }}</span>
