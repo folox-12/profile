@@ -4,9 +4,19 @@ import { useRouteFunction } from '@/composable/useRouteFunction';
 import { useI18n } from 'vue-i18n';
 import VParagraph from '@/components/VParagraph.vue';
 import VDateList from '@/components/VDateList.vue';
-import { EMAIL, SKILLS } from '@/constants/general';
+import { EMAIL, SKILLS, LINK_TO_GIT, LINK_TO_TELEGRAM, LINK_TO_LINKEDIN, RESUME_PATH } from '@/constants/general';
+import { mdiGithub, mdiTelegram, mdiLinkedin, mdiEmailOutline } from '@mdi/js';
+import VSvgComponent from '@/components/VSvgComponent.vue';
+import avatar from '@/assets/avatar.jpg';
 const { t } = useI18n();
 useRouteFunction();
+
+const socialLinks = computed(() => [
+    { href: LINK_TO_GIT, icon: mdiGithub, label: t('hero.socialGithub'), external: true },
+    { href: LINK_TO_TELEGRAM, icon: mdiTelegram, label: t('hero.socialTelegram'), external: true },
+    { href: LINK_TO_LINKEDIN, icon: mdiLinkedin, label: t('hero.socialLinkedin'), external: true },
+    { href: `mailto:${EMAIL}`, icon: mdiEmailOutline, label: t('hero.socialEmail'), external: false }
+]);
 
 const blocks = {
     work: {
@@ -41,9 +51,57 @@ const blocks = {
 
 <template>
     <div class="about flex flex-col gap-12">
-        <div class="hero flex flex-col">
-            <p class="text-[32px] font-bold leading-tight">{{ t('hero.name') }}</p>
-            <p class="text-base text-soft dark:text-soft-dark mt-1">{{ t('hero.role') }}</p>
+        <div class="hero flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-5">
+            <img
+                :src="avatar"
+                :alt="t('hero.name')"
+                class="w-24 h-24 rounded-full object-cover border border-black/10 dark:border-white/[.14] shrink-0"
+            >
+            <div class="flex flex-col items-center sm:items-start">
+                <p class="text-[32px] font-bold leading-tight">{{ t('hero.name') }}</p>
+                <p class="text-base text-soft dark:text-soft-dark mt-1">{{ t('hero.role') }}</p>
+                <div class="flex flex-wrap items-center justify-center sm:justify-start gap-3 mt-3.5">
+                    <a
+                        v-for="link in socialLinks"
+                        :key="link.label"
+                        :href="link.href"
+                        :target="link.external ? '_blank' : undefined"
+                        :aria-label="link.label"
+                        class="
+                        flex items-center justify-center w-9 h-9 rounded-full
+                        border border-black/10 dark:border-white/[.14]
+                        bg-card dark:bg-card-dark
+                        transition-transform hover:-translate-y-0.5
+                        focus-visible:ring-2 focus-visible:ring-mintline dark:focus-visible:ring-mintline-dark focus-visible:outline-none
+                        "
+                    >
+                        <VSvgComponent
+                            :icon="link.icon"
+                            width="18px"
+                            height="18px"
+                            class="fill-ink dark:fill-ink-dark"
+                        />
+                    </a>
+                    <a
+                        :href="RESUME_PATH"
+                        download
+                        class="
+                        inline-block w-fit
+                        py-2 px-4 rounded-[10px]
+                        text-sm font-bold
+                        bg-mint dark:bg-mint-dark
+                        text-onmint dark:text-white
+                        border border-mintline dark:border-mintline-dark
+                        shadow-[0_2px_0_#7cc79c] dark:shadow-[0_2px_0_#3d9478]
+                        hover:brightness-95
+                        transition
+                        focus-visible:ring-2 focus-visible:ring-mintline dark:focus-visible:ring-mintline-dark focus-visible:outline-none
+                        "
+                    >
+                        {{ t('hero.downloadResume') }}
+                    </a>
+                </div>
+            </div>
         </div>
         <v-paragraph
             :title="blocks.work.title"
