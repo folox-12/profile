@@ -23,9 +23,12 @@ const portrait = computed(() => onScreen.value && Boolean(route.params.id));
         <div class="w-full max-w-[960px] mx-auto px-6 flex flex-col flex-grow">
             <v-header />
             <!-- Живёт в лейауте, а не во вью — так сцена переживает переходы между страницами -->
-            <div class="flex justify-center">
+            <div
+                class="flex justify-center"
+                :class="{ 'hero-breakout': onScreen }"
+            >
                 <v-hero-model
-                    :size="onScreen ? 780 : 300"
+                    :size="onScreen ? 820 : 300"
                     :screen-text="t('hero.role')"
                     :focused="onScreen"
                     :portrait="portrait"
@@ -48,3 +51,12 @@ const portrait = computed(() => onScreen.value && Boolean(route.params.id));
         </div>
     </div>
 </template>
+
+<style scoped>
+/* В фокусе сцена выходит за колонку на всю ширину окна: в 960 px панель
+   упиралась бы по ширине раньше, чем по высоте, и оставалась мелкой */
+.hero-breakout {
+    width: 100vw;
+    margin-left: calc(50% - 50vw);
+}
+</style>

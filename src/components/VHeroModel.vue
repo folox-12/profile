@@ -88,13 +88,14 @@ const PORTRAIT_ROLL = -Math.PI / 2;
 
 // Камера в трёх состояниях: обычное, альбомный фокус и портретный
 const CAMERA_IDLE = { y: 0.35, z: 5.4, look: 0 };
-// Сложенная панель по ширине укладывается в колонку контента
-const CAMERA_FOCUS = { y: MODEL_CENTER_Y, z: 2.8, look: MODEL_CENTER_Y };
-// В портрете длинная сторона встаёт вертикально, поэтому камера отъезжает
-const CAMERA_PORTRAIT = { y: MODEL_CENTER_Y, z: 3.5, look: MODEL_CENTER_Y };
+// Ближе уже некуда: панель по высоте упирается в кадр
+const CAMERA_FOCUS = { y: MODEL_CENTER_Y, z: 2.4, look: MODEL_CENTER_Y };
+// В портрете вертикально встаёт длинная сторона, поэтому камера отъезжает
+const CAMERA_PORTRAIT = { y: MODEL_CENTER_Y, z: 3.2, look: MODEL_CENTER_Y };
 
-// Экран как DOM: размер в CSS-пикселях и мировая ширина плоскости под него
-const SCREEN_DOM_W = 960;
+// Экран как DOM. Ширина макета берётся с запасом над реальным размером дисплея
+// на экране: CSS3D тогда ужимает слой, а не растягивает, и текст остаётся чётким
+const SCREEN_DOM_W = 1200;
 
 // Тайминги интро в мс от старта сцены
 const LID_OPEN_FROM = 150;
@@ -131,6 +132,7 @@ let rollAngle = 0;
 let bodyMaterial: THREE.MeshStandardMaterial | null = null;
 let deckMaterial: THREE.MeshStandardMaterial | null = null;
 let edgeMaterial: THREE.LineBasicMaterial | null = null;
+let logoMaterial: THREE.LineBasicMaterial | null = null;
 let keyLight: THREE.DirectionalLight | null = null;
 let fillLight: THREE.HemisphereLight | null = null;
 let screenCanvas: HTMLCanvasElement | null = null;
@@ -325,21 +327,58 @@ const buildLaptop = () => {
     addEdges(lid);
     hinge.add(lid);
 
+    // Рамка узкая: дисплей забирает почти всю крышку, сверху остаётся место под глазок
+    const screenWidth = width * 0.94;
+    const screenHeight = lidHeight * 0.9;
+
+    // Логотип на крышке снаружи: проволочный глобус, как значок «интернета»
+    const logo = new THREE.LineBasicMaterial({ transparent: true, opacity: 0.85 });
+
+    logoMaterial = logo;
+
+    const globe = new THREE.Group();
+    const globeRadius = 0.24;
+    const ellipse = (rx: number, ry: number) => {
+        const points = new THREE.EllipseCurve(0, 0, rx, ry, 0, Math.PI * 2)
+            .getPoints(56)
+            .map(({ x, y }) => new THREE.Vector3(x, y, 0));
+
+        return new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(points), logo);
+    };
+    const chord = (level: number) => {
+        const y = globeRadius * level;
+        const half = globeRadius * Math.sqrt(1 - level * level);
+
+        return new THREE.Line(
+            new THREE.BufferGeometry().setFromPoints([
+                new THREE.Vector3(-half, y, 0),
+                new THREE.Vector3(half, y, 0)
+            ]),
+            logo
+        );
+    };
+
+    globe.add(ellipse(globeRadius, globeRadius));
+    globe.add(ellipse(globeRadius * 0.42, globeRadius));
+    globe.add(chord(0));
+    globe.add(chord(0.5));
+    globe.add(chord(-0.5));
+    globe.position.set(0, lidHeight / 2, -0.073);
+    hinge.add(globe);
+
     // Глазок камеры в рамке над экраном: тёмная линза и точка блика
     const lensMaterial = new THREE.MeshStandardMaterial({ color: 0x11151a, roughness: 0.25, metalness: 0.4 });
-    const lens = new THREE.Mesh(new THREE.CircleGeometry(0.024, 20), lensMaterial);
-    lens.position.set(0, lidHeight - 0.05, 0.004);
+    const lens = new THREE.Mesh(new THREE.CircleGeometry(0.015, 20), lensMaterial);
+    lens.position.set(0, (lidHeight + screenHeight / 2 + lidHeight / 2) / 2, 0.004);
     hinge.add(lens);
 
     const glare = new THREE.Mesh(
         new THREE.CircleGeometry(0.008, 12),
         new THREE.MeshBasicMaterial({ color: 0x9fb4c4, transparent: true, opacity: 0.7 })
     );
-    glare.position.set(-0.006, lidHeight - 0.044, 0.006);
+    glare.position.set(-0.004, lens.position.y + 0.004, 0.006);
     hinge.add(glare);
 
-    const screenWidth = width * 0.9;
-    const screenHeight = lidHeight * 0.86;
     const screen = new THREE.Mesh(new THREE.PlaneGeometry(screenWidth, screenHeight), display);
     screen.position.set(0, lidHeight / 2, 0.002);
     hinge.add(screen);
@@ -368,6 +407,7 @@ const applyPalette = () => {
     bodyMaterial?.color.setHex(palette.body);
     deckMaterial?.color.setHex(palette.deck);
     edgeMaterial?.color.setHex(palette.edge);
+    logoMaterial?.color.setHex(palette.edge);
     keyLight?.color.setHex(palette.key);
     fillLight?.groundColor.setHex(palette.fill);
 
