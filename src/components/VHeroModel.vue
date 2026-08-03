@@ -55,8 +55,19 @@ const PALETTE = {
 const BASE_ROTATION_X = -0.22;
 const BASE_ROTATION_Y = -0.38;
 
+const LAPTOP_WIDTH = 2.2;
+const LAPTOP_DEPTH = 1.5;
+const BASE_HEIGHT = 0.11;
+const LID_HEIGHT = 1.45;
+
 const LID_CLOSED = -1.52;
 const LID_OPEN = -0.28;
+
+// В фокусе корпус уезжает за крышку вокруг той же петли — как складывается Lenovo Yoga.
+// Угол больше 180 градусов: корпус уходит вниз и назад, а не проносится перед экраном.
+// Чуть больше прямого угла на выходе и сдвиг назад, чтобы он спрятался за крышкой
+const BASE_FOLD_X = 4.62;
+const BASE_FOLD_Z = -0.14;
 
 // Разворот лицом к зрителю: крышка встаёт вертикально, корпус не заваливается,
 // поэтому плоскость экрана оказывается ровно перед камерой
@@ -67,9 +78,9 @@ const FOCUS_EASING = 2.6;
 
 // Камера в двух состояниях: обычное и приближенное к экрану
 const CAMERA_IDLE = { y: 0.35, z: 5.4, look: 0 };
-// Кадр берёт ноутбук целиком: от нижней кромки корпуса (-0.44) до верха
-// вертикальной крышки (1.47), центр посередине — иначе низ срезается
-const CAMERA_FOCUS = { y: 0.52, z: 2.55, look: 0.52 };
+// Сложенный ноутбук — плоская панель от петли (-0.28) до верхней кромки
+// откинутого корпуса (1.66); кадр берёт её целиком с небольшим запасом
+const CAMERA_FOCUS = { y: 0.69, z: 2.6, look: 0.69 };
 
 // Экран как DOM: размер в CSS-пикселях и мировая ширина плоскости под него
 const SCREEN_DOM_W = 960;
@@ -103,6 +114,7 @@ let scene: THREE.Scene | null = null;
 let camera: THREE.PerspectiveCamera | null = null;
 let laptop: THREE.Group | null = null;
 let hinge: THREE.Group | null = null;
+let baseFold: THREE.Group | null = null;
 let bodyMaterial: THREE.MeshStandardMaterial | null = null;
 let deckMaterial: THREE.MeshStandardMaterial | null = null;
 let screenMaterial: THREE.MeshStandardMaterial | null = null;
@@ -250,27 +262,33 @@ const buildLaptop = () => {
     screenMaterial = display;
     edgeMaterial = edge;
 
-    const width = 2.2;
-    const depth = 1.5;
-    const baseHeight = 0.11;
+    const width = LAPTOP_WIDTH;
+    const depth = LAPTOP_DEPTH;
+    const baseHeight = BASE_HEIGHT;
 
     const addEdges = (mesh: THREE.Mesh) => {
         mesh.add(new THREE.LineSegments(new THREE.EdgesGeometry(mesh.geometry), edge));
     };
 
+    // Корпус тоже висит на петле, поэтому умеет складываться назад
+    baseFold = new THREE.Group();
+    baseFold.position.set(0, baseHeight / 2, -depth / 2);
+    group.add(baseFold);
+
     const base = new THREE.Mesh(new THREE.BoxGeometry(width, baseHeight, depth), body);
+    base.position.set(0, -baseHeight / 2, depth / 2);
     addEdges(base);
-    group.add(base);
+    baseFold.add(base);
 
     const keyboard = new THREE.Mesh(new THREE.PlaneGeometry(width * 0.82, depth * 0.5), deck);
     keyboard.rotation.x = -Math.PI / 2;
-    keyboard.position.set(0, baseHeight / 2 + 0.001, -0.15);
-    group.add(keyboard);
+    keyboard.position.set(0, 0.001, depth / 2 - 0.15);
+    baseFold.add(keyboard);
 
     const trackpad = new THREE.Mesh(new THREE.PlaneGeometry(width * 0.28, depth * 0.22), deck);
     trackpad.rotation.x = -Math.PI / 2;
-    trackpad.position.set(0, baseHeight / 2 + 0.001, 0.45);
-    group.add(trackpad);
+    trackpad.position.set(0, 0.001, depth / 2 + 0.45);
+    baseFold.add(trackpad);
 
     // Крышка живёт в своём пивоте на задней кромке корпуса — так она открывается «от петли»
     hinge = new THREE.Group();
@@ -278,7 +296,7 @@ const buildLaptop = () => {
     hinge.rotation.x = LID_OPEN;
     group.add(hinge);
 
-    const lidHeight = 1.45;
+    const lidHeight = LID_HEIGHT;
     const lid = new THREE.Mesh(new THREE.BoxGeometry(width, lidHeight, 0.07), body);
     lid.position.set(0, lidHeight / 2, -0.035);
     addEdges(lid);
@@ -569,6 +587,14 @@ const animate = () => {
         hinge.rotation.x += (lidTarget - hinge.rotation.x) * ease;
     }
 
+    if (baseFold && phase.value === 'done') {
+        const foldTarget = focused ? BASE_FOLD_X : 0;
+        const foldZ = -LAPTOP_DEPTH / 2 + (focused ? BASE_FOLD_Z : 0);
+
+        baseFold.rotation.x += (foldTarget - baseFold.rotation.x) * ease;
+        baseFold.position.z += (foldZ - baseFold.position.z) * ease;
+    }
+
     if (focused && !isDragging.value) {
         // Доворачиваем к «лицу» по кратчайшей дуге, не трогая накопленные обороты
         const current = BASE_ROTATION_Y + spinAngle + boostAngle + dragged.y + faceOffset;
@@ -731,6 +757,7 @@ onBeforeUnmount(() => {
     camera = null;
     laptop = null;
     hinge = null;
+    baseFold = null;
 });
 
 watch(isDark, applyPalette);
