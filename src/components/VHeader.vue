@@ -64,7 +64,7 @@ const navigateTo = (path: string): void => {
 </script>
 
 <template>
-    <header class="flex gap-4 justify-between items-center flex-wrap pt-7 pb-3">
+    <header class="flex gap-4 justify-between items-center flex-wrap pt-7 pb-1">
         <div class="main-menu flex gap-2 items-center max-md:hidden">
             <router-link
                 class="router-link py-2.5 px-4 rounded-lg font-medium transition-colors"
