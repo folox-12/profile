@@ -15,15 +15,15 @@ const props = withDefaults(defineProps<{
     intro?: boolean;
     /** Приблизить ноутбук и показать на экране содержимое слота screen */
     focused?: boolean;
-    /** Повернуть сложенный ноутбук вертикально — под длинную страницу */
-    portrait?: boolean;
+    /** Вплотную к дисплею: в кадре только экран, рамка за границей */
+    detail?: boolean;
 }>(), {
     size: 300,
     screenUser: 'vasilev_sergey',
     screenText: 'Frontend Developer',
     intro: true,
     focused: false,
-    portrait: false
+    detail: false
 });
 
 const host = ref<HTMLDivElement | null>(null);
@@ -79,19 +79,17 @@ const FACE_ROTATION_X = 0;
 const FACE_ROTATION_Y = 0;
 const FOCUS_EASING = 2.6;
 
-// Модель вращается вокруг собственного центра, а не вокруг петли:
-// без этого при повороте в портрет панель уезжала бы вбок
-const MODEL_PIVOT_Y = 0.75;
-const MODEL_CENTER_Y = 0.625;
 const MODEL_SCALE = 1.3;
-const PORTRAIT_ROLL = -Math.PI / 2;
+const MODEL_CENTER_Y = 0.625;
+// Центр вертикальной крышки — в него целится камера, когда уходит вплотную к экрану
+const SCREEN_CENTER_Y = 0.664;
 
-// Камера в трёх состояниях: обычное, альбомный фокус и портретный
+// Камера в трёх состояниях: обычное, вся панель и вплотную к дисплею
 const CAMERA_IDLE = { y: 0.35, z: 5.4, look: 0 };
-// Ближе уже некуда: панель по высоте упирается в кадр
+// Панель целиком в кадре
 const CAMERA_FOCUS = { y: MODEL_CENTER_Y, z: 2.4, look: MODEL_CENTER_Y };
-// В портрете вертикально встаёт длинная сторона, поэтому камера отъезжает
-const CAMERA_PORTRAIT = { y: MODEL_CENTER_Y, z: 3.5, look: MODEL_CENTER_Y };
+// Дисплей перекрывает кадр по обеим сторонам: рамки и корпуса не видно
+const CAMERA_DETAIL = { y: SCREEN_CENTER_Y, z: 1.95, look: SCREEN_CENTER_Y };
 
 // Экран как DOM. Ширина макета берётся с запасом над реальным размером дисплея
 // на экране: CSS3D тогда ужимает слой, а не растягивает, и текст остаётся чётким
@@ -127,8 +125,6 @@ let camera: THREE.PerspectiveCamera | null = null;
 let laptop: THREE.Group | null = null;
 let hinge: THREE.Group | null = null;
 let baseFold: THREE.Group | null = null;
-let screenDom = { width: 0, height: 0 };
-let rollAngle = 0;
 let bodyMaterial: THREE.MeshStandardMaterial | null = null;
 let deckMaterial: THREE.MeshStandardMaterial | null = null;
 let edgeMaterial: THREE.LineBasicMaterial | null = null;
@@ -211,18 +207,6 @@ const drawScreen = (chars: number, caret: boolean) => {
     screenTexture.needsUpdate = true;
 };
 
-/** В портрете элемент экрана меняет стороны местами и разворачивается против крена модели */
-const applyScreenOrientation = () => {
-    if (!screenSlot.value || !screenDom.width) {
-        return;
-    }
-
-    const portrait = props.portrait;
-
-    screenSlot.value.style.width = `${portrait ? screenDom.height : screenDom.width}px`;
-    screenSlot.value.style.height = `${portrait ? screenDom.width : screenDom.height}px`;
-};
-
 const redrawScreen = () => {
     drawnProgress = -1;
     drawScreen(drawnChars, drawnCaret);
@@ -240,19 +224,8 @@ const drawLoading = (progress: number) => {
     ctx.fillStyle = '#0e1317';
     ctx.fillRect(0, 0, SCREEN_TEXTURE_W, SCREEN_TEXTURE_H);
 
-    ctx.save();
-
-    // В портрете модель кренится вместе с текстурой, поэтому рисуем в повёрнутой
-    // системе координат — текст и полоса остаются вертикальными для зрителя
-    if (props.portrait) {
-        ctx.translate(SCREEN_TEXTURE_W / 2, SCREEN_TEXTURE_H / 2);
-        ctx.rotate(-Math.PI / 2);
-        ctx.translate(-SCREEN_TEXTURE_H / 2, -SCREEN_TEXTURE_W / 2);
-    }
-
-    const areaWidth = props.portrait ? SCREEN_TEXTURE_H : SCREEN_TEXTURE_W;
-    const areaHeight = props.portrait ? SCREEN_TEXTURE_W : SCREEN_TEXTURE_H;
-    const barWidth = areaWidth - 112;
+    const areaHeight = SCREEN_TEXTURE_H;
+    const barWidth = SCREEN_TEXTURE_W - 112;
     const barY = areaHeight / 2 + 12;
 
     ctx.textAlign = 'left';
@@ -260,36 +233,16 @@ const drawLoading = (progress: number) => {
     ctx.font = '30px ui-monospace, SFMono-Regular, Menlo, monospace';
     ctx.fillStyle = 'rgba(255, 255, 255, .45)';
 
+    // Строка должна остаться одной: если не влезает, ужимаем кегль
     const prompt = `${props.screenUser}:~$ open ~/works`;
-    const lines: string[] = [];
+    let size = 30;
 
-    if (props.portrait) {
-        // В портрете экран узкий — приглашение переносим по словам
-        prompt.split(' ').forEach((word) => {
-            const last = lines[lines.length - 1];
-            const merged = last ? `${last} ${word}` : word;
-
-            if (last && ctx.measureText(merged).width > barWidth) {
-                lines.push(word);
-            } else {
-                lines[Math.max(lines.length - 1, 0)] = merged;
-            }
-        });
-    } else {
-        // В альбомной ориентации строка должна остаться одной: ужимаем кегль под ширину
-        let size = 30;
-
-        while (size > 18 && ctx.measureText(prompt).width > barWidth) {
-            size -= 1;
-            ctx.font = `${size}px ui-monospace, SFMono-Regular, Menlo, monospace`;
-        }
-
-        lines.push(prompt);
+    while (size > 18 && ctx.measureText(prompt).width > barWidth) {
+        size -= 1;
+        ctx.font = `${size}px ui-monospace, SFMono-Regular, Menlo, monospace`;
     }
 
-    lines.forEach((line, index) => {
-        ctx.fillText(line, 56, areaHeight / 2 - 46 - (lines.length - 1 - index) * 36);
-    });
+    ctx.fillText(prompt, 56, areaHeight / 2 - 46);
 
     ctx.fillStyle = 'rgba(255, 255, 255, .12)';
     ctx.fillRect(56, barY, barWidth, 14);
@@ -300,8 +253,6 @@ const drawLoading = (progress: number) => {
     ctx.font = '22px ui-monospace, SFMono-Regular, Menlo, monospace';
     ctx.fillStyle = 'rgba(255, 255, 255, .35)';
     ctx.fillText(`${Math.round(progress * 100)}%`, 56, barY + 48);
-
-    ctx.restore();
 
     screenTexture.needsUpdate = true;
 };
@@ -432,8 +383,8 @@ const buildLaptop = () => {
 
     // Тот же прямоугольник, но из DOM: CSS3D кладёт настоящую вёрстку в плоскость экрана
     if (screenSlot.value) {
-        screenDom = { width: SCREEN_DOM_W, height: Math.round(SCREEN_DOM_W * (screenHeight / screenWidth)) };
-        applyScreenOrientation();
+        screenSlot.value.style.width = `${SCREEN_DOM_W}px`;
+        screenSlot.value.style.height = `${Math.round(SCREEN_DOM_W * (screenHeight / screenWidth))}px`;
 
         screenObject = new CSS3DObject(screenSlot.value);
         screenObject.position.set(0, lidHeight / 2, 0.004);
@@ -443,7 +394,7 @@ const buildLaptop = () => {
     }
 
     group.position.y = -0.35;
-    group.scale.setScalar(1.3);
+    group.scale.setScalar(MODEL_SCALE);
 
     return group;
 };
@@ -686,8 +637,8 @@ const animate = () => {
     }
 
     const ease = Math.min(delta * FOCUS_EASING, 1);
-    const portrait = focused && props.portrait;
-    const cameraTarget = portrait ? CAMERA_PORTRAIT : (focused ? CAMERA_FOCUS : CAMERA_IDLE);
+    const detail = focused && props.detail;
+    const cameraTarget = detail ? CAMERA_DETAIL : (focused ? CAMERA_FOCUS : CAMERA_IDLE);
 
     if (focused) {
         // Накопленный ручной наклон распускаем, чтобы экран смотрел строго вперёд
@@ -726,29 +677,19 @@ const animate = () => {
         faceOffset += wrapAngle(FACE_ROTATION_Y - current) * ease;
     }
 
-    const rollTarget = portrait ? PORTRAIT_ROLL : 0;
-
-    rollAngle += (rollTarget - rollAngle) * ease;
-
     laptop.rotation.x = baseRotationX + dragged.x;
     laptop.rotation.y = BASE_ROTATION_Y + spinAngle + boostAngle + dragged.y + faceOffset;
-    laptop.rotation.z = rollAngle;
 
-    // Крен вокруг центра панели: сдвиг компенсирует то, что начало группы сидит на петле
     const bob = prefersReducedMotion ? 0 : Math.sin(now / 1250) * 0.06 * (focused ? 0.12 : 1);
 
-    laptop.position.x = MODEL_SCALE * MODEL_PIVOT_Y * Math.sin(rollAngle);
-    laptop.position.y = MODEL_CENTER_Y - MODEL_SCALE * MODEL_PIVOT_Y * Math.cos(rollAngle) + bob;
+    laptop.position.y = -0.35 + bob;
 
     if (screenObject) {
         // Страницу показываем, только когда экран уже развёрнут к зрителю и камера доехала
-        const aligned = Math.abs(wrapAngle(laptop.rotation.y - FACE_ROTATION_Y)) < 0.2 &&
-            Math.abs(rollAngle - rollTarget) < 0.02;
+        const aligned = Math.abs(wrapAngle(laptop.rotation.y - FACE_ROTATION_Y)) < 0.2;
         const zoom = Math.min(Math.max(
             (CAMERA_IDLE.z - cameraState.z) / (CAMERA_IDLE.z - cameraTarget.z), 0), 1);
 
-        // Контент разворачиваем обратно, чтобы он остался вертикальным при крене модели
-        screenObject.rotation.z = -rollAngle;
         screenObject.visible = focused;
         screenReady.value = focused && aligned && zoom > 0.97;
 
@@ -896,8 +837,7 @@ onBeforeUnmount(() => {
 
 watch(isDark, applyPalette);
 watch(() => [props.screenText, props.screenUser], redrawScreen);
-watch(() => props.portrait, () => {
-    applyScreenOrientation();
+watch(() => props.detail, () => {
     drawnProgress = -1;
 });
 </script>

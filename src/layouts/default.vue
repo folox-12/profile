@@ -14,8 +14,9 @@ const fullPath = computed(() => route.fullPath);
 // На узких экранах это нечитаемо, поэтому там всё как раньше: ноутбук сверху, список под ним
 const isWide = useMediaQuery('(min-width: 768px)');
 const onScreen = computed(() => route.path.startsWith('/works') && isWide.value);
-// На карточке проекта панель встаёт вертикально — так помещается вся страница
-const portrait = computed(() => onScreen.value && Boolean(route.params.id));
+// На карточке проекта камера уходит вплотную к дисплею: в кадре остаётся только
+// экран, и страница видна целиком. Назад к витрине — камера отъезжает
+const detail = computed(() => onScreen.value && Boolean(route.params.id));
 </script>
 
 <template>
@@ -27,7 +28,7 @@ const portrait = computed(() => onScreen.value && Boolean(route.params.id));
             <!-- Кнопка возврата живёт снаружи ноутбука: внутри экрана она уехала бы вместе
                  со скроллом страницы, а выйти к витрине нужно из любого места -->
             <router-link
-                v-if="portrait"
+                v-if="detail"
                 to="/works/"
                 class="
                 self-start inline-flex items-center gap-2 mb-2
@@ -45,14 +46,13 @@ const portrait = computed(() => onScreen.value && Boolean(route.params.id));
             <!-- Живёт в лейауте, а не во вью — так сцена переживает переходы между страницами -->
             <!-- Ширина панели задаётся высотой блока: угол камеры по вертикали постоянный,
                  поэтому ширина модели равна высоте кадра, умноженной на 1.44.
-                 764px дают ровно 1100px панели; ограничители не дают ей вылезти
-                 из колонки на узких окнах и из экрана по высоте -->
+                 Ограничители не дают панели вылезти из колонки и из окна -->
             <div class="flex justify-center shrink-0">
                 <v-hero-model
-                    :size="onScreen ? 'min(764px, 70vh, 70vw)' : 300"
+                    :size="onScreen ? 'min(800px, 82vh, 72vw)' : 300"
                     :screen-text="t('hero.role')"
                     :focused="onScreen"
-                    :portrait="portrait"
+                    :detail="detail"
                 >
                     <template #screen>
                         <router-view v-if="onScreen" />
