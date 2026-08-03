@@ -17,7 +17,9 @@
         "prevImage": "Previous image",
         "nextImage": "Next image",
         "playVideo": "Play video",
-        "backToWorks": "Back to works"
+        "backToWorks": "Back to works",
+        "close": "Close",
+        "openImage": "Open image"
     },
 
     "works": {
