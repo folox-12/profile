@@ -432,7 +432,8 @@ const animate = () => {
         updateIntro(now);
     }
 
-    if (phase.value === 'done' && !prefersReducedMotion && !isDragging.value) {
+    // Раскручивается уже в полёте, а не после приземления
+    if (phase.value !== 'boot' && !prefersReducedMotion && !isDragging.value) {
         spinAngle += delta * SPIN_SPEED;
     }
 
