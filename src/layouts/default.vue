@@ -4,13 +4,16 @@ import VHeroModel from '@/components/VHeroModel.vue';
 import { computed } from 'vue';
 import { useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
+import { useMediaQuery } from '@vueuse/core';
 
 const route = useRoute();
 const { t } = useI18n();
 const fullPath = computed(() => route.fullPath);
 
-// На разделе работ страница показывается не под ноутбуком, а прямо на его экране
-const onScreen = computed(() => route.path.startsWith('/works'));
+// На разделе работ страница показывается не под ноутбуком, а прямо на его экране.
+// На узких экранах это нечитаемо, поэтому там всё как раньше: ноутбук сверху, список под ним
+const isWide = useMediaQuery('(min-width: 768px)');
+const onScreen = computed(() => route.path.startsWith('/works') && isWide.value);
 </script>
 
 <template>

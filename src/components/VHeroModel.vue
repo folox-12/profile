@@ -58,14 +58,16 @@ const BASE_ROTATION_Y = -0.38;
 const LID_CLOSED = -1.52;
 const LID_OPEN = -0.28;
 
-// Разворот лицом к зрителю, когда на экране показывается страница
-const FACE_ROTATION_X = -0.06;
+// Разворот лицом к зрителю: крышка встаёт вертикально, корпус не заваливается,
+// поэтому плоскость экрана оказывается ровно перед камерой
+const LID_FOCUS = 0;
+const FACE_ROTATION_X = 0;
 const FACE_ROTATION_Y = 0;
 const FOCUS_EASING = 2.6;
 
 // Камера в двух состояниях: обычное и приближенное к экрану
 const CAMERA_IDLE = { y: 0.35, z: 5.4, look: 0 };
-const CAMERA_FOCUS = { y: 0.62, z: 2.75, look: 0.62 };
+const CAMERA_FOCUS = { y: 0.66, z: 2.75, look: 0.66 };
 
 // Экран как DOM: размер в CSS-пикселях и мировая ширина плоскости под него
 const SCREEN_DOM_W = 960;
@@ -509,6 +511,12 @@ const animate = () => {
     camera.lookAt(0, cameraState.look, 0);
 
     baseRotationX += ((focused ? FACE_ROTATION_X : BASE_ROTATION_X) - baseRotationX) * ease;
+
+    if (hinge && phase.value === 'done') {
+        const lidTarget = focused ? LID_FOCUS : LID_OPEN;
+
+        hinge.rotation.x += (lidTarget - hinge.rotation.x) * ease;
+    }
 
     if (focused && !isDragging.value) {
         // Доворачиваем к «лицу» по кратчайшей дуге, не трогая накопленные обороты
