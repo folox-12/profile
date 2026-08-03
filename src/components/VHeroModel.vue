@@ -6,12 +6,15 @@ import { useDarkModeClass } from '@/composable/useDarkModeClass';
 const props = withDefaults(defineProps<{
     /** Высота области под сцену в px; по ширине она растягивается на весь контейнер */
     size?: number;
+    /** Ник в приглашении терминала на экране */
+    screenUser?: string;
     /** Текст, который печатается на экране во время загрузки */
     screenText?: string;
     /** Проигрывать полноэкранное интро при первой загрузке */
     intro?: boolean;
 }>(), {
     size: 300,
+    screenUser: 'vasilev_sergey',
     screenText: 'Frontend Developer',
     intro: true
 });
@@ -132,7 +135,7 @@ const drawScreen = (chars: number, caret: boolean) => {
 
     ctx.font = '32px ui-monospace, SFMono-Regular, Menlo, monospace';
     ctx.fillStyle = 'rgba(255, 255, 255, .32)';
-    ctx.fillText('> whoami', 56, SCREEN_TEXTURE_H / 2 - 52);
+    ctx.fillText(`${props.screenUser}:~$ whoami`, 56, SCREEN_TEXTURE_H / 2 - 52);
 
     const text = props.screenText.slice(0, Math.max(chars, 0));
 
@@ -575,7 +578,7 @@ onBeforeUnmount(() => {
 });
 
 watch(isDark, applyPalette);
-watch(() => props.screenText, redrawScreen);
+watch(() => [props.screenText, props.screenUser], redrawScreen);
 </script>
 
 <template>
