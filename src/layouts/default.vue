@@ -20,7 +20,9 @@ const portrait = computed(() => onScreen.value && Boolean(route.params.id));
 
 <template>
     <div class="flex flex-col h-full overflow-x-clip bg-bg dark:bg-bg-dark text-ink dark:text-ink-dark transition-colors duration-300">
-        <div class="w-full max-w-[960px] mx-auto px-6 flex flex-col flex-grow">
+        <!-- Колонка шире только на широких экранах; читаемость текста держит собственный
+             предел в VParagraph, поэтому строки не растягиваются вслед за ней -->
+        <div class="w-full max-w-[960px] lg:max-w-[1080px] xl:max-w-[1200px] mx-auto px-6 flex flex-col flex-grow">
             <v-header />
             <!-- Живёт в лейауте, а не во вью — так сцена переживает переходы между страницами -->
             <div

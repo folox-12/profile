@@ -23,7 +23,7 @@ defineProps<Props>();
             </span>
         </h2>
         <div v-if="description">
-            <span class="block max-w-[640px] leading-[1.7] text-soft dark:text-soft-dark">
+            <span class="block max-w-[68ch] leading-[1.7] text-soft dark:text-soft-dark">
                 {{ description }}
             </span>
             <div class="mt-[18px]">
