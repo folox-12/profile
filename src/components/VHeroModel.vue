@@ -259,7 +259,37 @@ const drawLoading = (progress: number) => {
     ctx.textBaseline = 'middle';
     ctx.font = '30px ui-monospace, SFMono-Regular, Menlo, monospace';
     ctx.fillStyle = 'rgba(255, 255, 255, .45)';
-    ctx.fillText(`${props.screenUser}:~$ open ~/works`, 56, areaHeight / 2 - 46);
+
+    const prompt = `${props.screenUser}:~$ open ~/works`;
+    const lines: string[] = [];
+
+    if (props.portrait) {
+        // В портрете экран узкий — приглашение переносим по словам
+        prompt.split(' ').forEach((word) => {
+            const last = lines[lines.length - 1];
+            const merged = last ? `${last} ${word}` : word;
+
+            if (last && ctx.measureText(merged).width > barWidth) {
+                lines.push(word);
+            } else {
+                lines[Math.max(lines.length - 1, 0)] = merged;
+            }
+        });
+    } else {
+        // В альбомной ориентации строка должна остаться одной: ужимаем кегль под ширину
+        let size = 30;
+
+        while (size > 18 && ctx.measureText(prompt).width > barWidth) {
+            size -= 1;
+            ctx.font = `${size}px ui-monospace, SFMono-Regular, Menlo, monospace`;
+        }
+
+        lines.push(prompt);
+    }
+
+    lines.forEach((line, index) => {
+        ctx.fillText(line, 56, areaHeight / 2 - 46 - (lines.length - 1 - index) * 36);
+    });
 
     ctx.fillStyle = 'rgba(255, 255, 255, .12)';
     ctx.fillRect(56, barY, barWidth, 14);
