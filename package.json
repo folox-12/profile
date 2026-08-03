@@ -16,11 +16,14 @@
     "@vueuse/core": "^12.7.0",
     "@vueuse/motion": "^2.2.6",
     "core-js": "^3.8.3",
+    "three": "^0.185.1",
     "vue": "^3.2.13",
     "vue-i18n": "9",
     "vue-router": "^4.0.3"
   },
   "devDependencies": {
+    "@babel/plugin-transform-class-static-block": "^7.27.1",
+    "@types/three": "^0.185.3",
     "@typescript-eslint/eslint-plugin": "^5.4.0",
     "@typescript-eslint/parser": "^5.4.0",
     "@vue/cli-plugin-babel": "~5.0.0",

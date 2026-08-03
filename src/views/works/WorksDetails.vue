@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useRouteFunction } from '@/composable/useRouteFunction';
-import { computed, onMounted, reactive, ref } from 'vue';
+import { computed, onMounted, onUnmounted, reactive, ref } from 'vue';
 import { getProjectWorkById, ProjectType, PROJECT_WORKS } from '@/constants/projects';
 import useTranslation from '@/composable/useTranslation';
 import { useI18n } from 'vue-i18n';
@@ -35,8 +35,51 @@ const stackList = computed(() => details.value?.stack?.split(',').map(s => s.tri
 
 const playingVideo = reactive<Record<number, boolean>>({});
 
+const lightboxIndex = ref(-1);
+
+const imageCount = computed(() => currentProject.value?.media?.length ?? 0);
+
+const lightboxItem = computed(() => (
+    lightboxIndex.value >= 0 ? currentProject.value?.media?.[lightboxIndex.value] : undefined
+));
+
+const openLightbox = (index: number) => {
+    lightboxIndex.value = index;
+};
+
+const closeLightbox = () => {
+    lightboxIndex.value = -1;
+};
+
+const shiftLightbox = (direction: number) => {
+    if (!imageCount.value) {
+        return;
+    }
+
+    lightboxIndex.value = (lightboxIndex.value + direction + imageCount.value) % imageCount.value;
+};
+
+const onLightboxKey = (event: KeyboardEvent) => {
+    if (lightboxIndex.value < 0) {
+        return;
+    }
+
+    if (event.key === 'Escape') {
+        closeLightbox();
+    } else if (event.key === 'ArrowLeft') {
+        shiftLightbox(-1);
+    } else if (event.key === 'ArrowRight') {
+        shiftLightbox(1);
+    }
+};
+
 onMounted(() => {
     currentProject.value = getProjectWorkById(title.value.value as string);
+    window.addEventListener('keydown', onLightboxKey);
+});
+
+onUnmounted(() => {
+    window.removeEventListener('keydown', onLightboxKey);
 });
 </script>
 
@@ -140,12 +183,19 @@ onMounted(() => {
             "
             :class="key === 0 || item.type === 'video' ? 'sm:col-span-2' : ''"
         >
-            <img
+            <button
                 v-if="item.type === 'image'"
-                class="w-full h-full object-cover"
-                :src="item.src"
-                :alt="`${currentProject?.name} — ${key + 1}`"
-            />
+                type="button"
+                class="block w-full h-full cursor-zoom-in focus-visible:ring-2 focus-visible:ring-mintline dark:focus-visible:ring-mintline-dark focus-visible:outline-none"
+                :aria-label="`${t('general.openImage')}: ${currentProject?.name}`"
+                @click="openLightbox(key)"
+            >
+                <img
+                    class="w-full h-full object-cover"
+                    :src="item.src"
+                    :alt="`${currentProject?.name} — ${key + 1}`"
+                />
+            </button>
             <template v-else>
                 <video
                     v-if="playingVideo[key]"
@@ -182,9 +232,59 @@ onMounted(() => {
         </div>
     </div>
 
+    <!-- Просмотрщик выносится в body: внутри экрана ноутбука он был бы заперт
+         в его плоскости, а фото нужно показать во всю страницу -->
+    <teleport to="body">
+        <div
+            v-if="lightboxItem"
+            class="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-4 sm:p-10"
+            role="dialog"
+            aria-modal="true"
+            @click.self="closeLightbox"
+        >
+            <img
+                :src="lightboxItem.type === 'video' ? lightboxItem.poster : lightboxItem.src"
+                :alt="`${currentProject?.name} — ${lightboxIndex + 1}`"
+                class="max-w-full max-h-full object-contain rounded-lg select-none"
+            />
+
+            <button
+                type="button"
+                class="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/15 text-white text-xl leading-none flex items-center justify-center transition hover:bg-white/25 focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none"
+                :aria-label="t('general.close')"
+                @click="closeLightbox"
+            >×</button>
+
+            <template v-if="imageCount > 1">
+                <button
+                    type="button"
+                    class="absolute left-3 sm:left-6 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-white/15 text-white text-2xl leading-none flex items-center justify-center transition hover:bg-white/25 focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none"
+                    :aria-label="t('general.prevImage')"
+                    @click="shiftLightbox(-1)"
+                >‹</button>
+                <button
+                    type="button"
+                    class="absolute right-3 sm:right-6 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-white/15 text-white text-2xl leading-none flex items-center justify-center transition hover:bg-white/25 focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none"
+                    :aria-label="t('general.nextImage')"
+                    @click="shiftLightbox(1)"
+                >›</button>
+                <span class="absolute bottom-5 left-1/2 -translate-x-1/2 text-sm text-white/70 tabular-nums">
+                    {{ lightboxIndex + 1 }} / {{ imageCount }}
+                </span>
+            </template>
+        </div>
+    </teleport>
+
+    <!-- Внутри экрана ноутбука страница скроллится сама, поэтому переключение проектов
+         прилипает к нижней кромке дисплея и всегда под рукой -->
     <div
         v-if="prevProject || nextProject"
-        class="grid sm:grid-cols-2 gap-4 mt-10 pt-8 border-t border-black/10 dark:border-white/[.14]"
+        class="
+        grid sm:grid-cols-2 gap-4 mt-10 pt-6 pb-1
+        border-t border-black/10 dark:border-white/[.14]
+        md:sticky md:bottom-0 md:z-10
+        md:bg-card/95 md:dark:bg-card-dark/95 md:backdrop-blur
+        "
     >
         <router-link
             v-if="prevProject"

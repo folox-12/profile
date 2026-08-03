@@ -67,7 +67,7 @@ const navigateTo = (path: string): void => {
     <header class="flex gap-4 justify-between items-center flex-wrap pt-7 pb-7">
         <div class="main-menu flex gap-2 items-center max-md:hidden">
             <router-link
-                class="router-link py-2.5 px-4 rounded-lg font-medium transition-colors"
+                class="router-link router-link--home py-2.5 px-4 rounded-lg font-medium transition-colors"
                 to="/"
             >
                 {{t('general.about')}}
@@ -203,12 +203,16 @@ const navigateTo = (path: string): void => {
 .dark .router-link {
   color: theme('colors.soft-dark');
 }
-.router-link-exact-active {
+/* Раздел остаётся активным и на вложенных страницах: /works/:id подсвечивает «Работы».
+   Ссылка на главную исключена — её путь совпадает с началом любого маршрута */
+.router-link-active:not(.router-link--home),
+.router-link--home.router-link-exact-active {
   font-weight: 700;
   background-color: theme('colors.mint');
   color: theme('colors.onmint');
 }
-.dark .router-link-exact-active {
+.dark .router-link-active:not(.router-link--home),
+.dark .router-link--home.router-link-exact-active {
   background-color: theme('colors.nav-active-dark');
   color: #fff;
 }
