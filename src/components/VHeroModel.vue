@@ -67,7 +67,7 @@ const FOCUS_EASING = 2.6;
 
 // Камера в двух состояниях: обычное и приближенное к экрану
 const CAMERA_IDLE = { y: 0.35, z: 5.4, look: 0 };
-const CAMERA_FOCUS = { y: 0.66, z: 2.75, look: 0.66 };
+const CAMERA_FOCUS = { y: 0.66, z: 2.3, look: 0.66 };
 
 // Экран как DOM: размер в CSS-пикселях и мировая ширина плоскости под него
 const SCREEN_DOM_W = 960;
