@@ -6,15 +6,12 @@ import { useDarkModeClass } from '@/composable/useDarkModeClass';
 const props = withDefaults(defineProps<{
     /** Размер модели в px (квадрат) в обычном, «припаркованном» состоянии */
     size?: number;
-    /** Насколько сильно модель доворачивается за курсором, в радианах */
-    tilt?: number;
     /** Текст, который печатается на экране во время загрузки */
     screenText?: string;
     /** Проигрывать полноэкранное интро при первой загрузке */
     intro?: boolean;
 }>(), {
-    size: 220,
-    tilt: 0.45,
+    size: 280,
     screenText: 'Frontend Developer',
     intro: true
 });
@@ -23,7 +20,7 @@ const host = ref<HTMLDivElement | null>(null);
 const stage = ref<HTMLDivElement | null>(null);
 const { isDark } = useDarkModeClass();
 
-type Phase = 'boot' | 'landing' | 'done';
+type Phase = 'loading' | 'landing' | 'done';
 
 const phase = ref<Phase>('done');
 
@@ -64,6 +61,9 @@ const FLIGHT_DURATION = 900;
 
 // Холостое вращение, рад/с
 const SPIN_SPEED = 0.4;
+// Стартовая раскрутка: пять оборотов, затухающих до холостой скорости
+const SPIN_BOOST_TURNS = 5;
+const SPIN_BOOST_DURATION = 3000;
 // Раскрутка мышью: рад на пиксель, затухание инерции и предел наклона по вертикали
 const DRAG_SENSITIVITY = 0.009;
 const DRAG_FRICTION = 2.6;
@@ -91,9 +91,6 @@ let resizeObserver: ResizeObserver | null = null;
 let intersectionObserver: IntersectionObserver | null = null;
 let flightTimer = 0;
 
-// Текущий и целевой поворот — целевой ставит мышь, текущий догоняет его плавно
-const rotation = { x: 0, y: 0 };
-const target = { x: 0, y: 0 };
 let prefersReducedMotion = false;
 let introStartedAt = 0;
 let bodyOverflow = '';
@@ -102,6 +99,8 @@ let drawnChars = -1;
 let drawnCaret = false;
 let screenIsOn = false;
 let spinAngle = 0;
+let boostAngle = 0;
+let boostStartedAt = 0;
 let lastFrameAt = 0;
 
 // Ручная раскрутка: накопленный поворот, скорость по инерции и состояние захвата
@@ -218,7 +217,7 @@ const buildLaptop = () => {
     hinge.add(screen);
 
     group.position.y = -0.35;
-    group.scale.setScalar(1.3);
+    group.scale.setScalar(1.15);
 
     return group;
 };
@@ -236,39 +235,22 @@ const applyPalette = () => {
 };
 
 const onPointerMove = (event: PointerEvent) => {
-    if (isDragging.value) {
-        if (event.pointerId !== dragPointerId) {
-            return;
-        }
-
-        const dx = event.clientX - dragPrev.x;
-        const dy = event.clientY - dragPrev.y;
-
-        dragPrev.x = event.clientX;
-        dragPrev.y = event.clientY;
-
-        dragged.y += dx * DRAG_SENSITIVITY;
-        dragged.x = Math.min(Math.max(dragged.x + dy * DRAG_SENSITIVITY, -DRAG_LIMIT_X), DRAG_LIMIT_X);
-
-        // Скорость последнего движения — она же станет инерцией после отпускания
-        dragVelocity.y = dx * DRAG_SENSITIVITY * 60;
-        dragVelocity.x = dy * DRAG_SENSITIVITY * 60;
-
+    if (!isDragging.value || event.pointerId !== dragPointerId) {
         return;
     }
 
-    // Нормализуем позицию курсора относительно центра экрана в диапазон [-1, 1]
-    const x = (event.clientX / window.innerWidth) * 2 - 1;
-    const y = (event.clientY / window.innerHeight) * 2 - 1;
+    const dx = event.clientX - dragPrev.x;
+    const dy = event.clientY - dragPrev.y;
 
-    // Вертикаль инвертирована: наводишься на модель — экран поворачивается к тебе, а не задирается вверх
-    target.y = x * props.tilt;
-    target.x = -y * props.tilt;
-};
+    dragPrev.x = event.clientX;
+    dragPrev.y = event.clientY;
 
-const onPointerLeave = () => {
-    target.x = 0;
-    target.y = 0;
+    dragged.y += dx * DRAG_SENSITIVITY;
+    dragged.x = Math.min(Math.max(dragged.x + dy * DRAG_SENSITIVITY, -DRAG_LIMIT_X), DRAG_LIMIT_X);
+
+    // Скорость последнего движения — она же станет инерцией после отпускания
+    dragVelocity.y = dx * DRAG_SENSITIVITY * 60;
+    dragVelocity.x = dy * DRAG_SENSITIVITY * 60;
 };
 
 const onPointerUp = (event: PointerEvent) => {
@@ -363,12 +345,16 @@ const finishIntro = () => {
 
 /** Перелёт из центра экрана на своё место в вёрстке: FLIP на трансформе, без искажения пропорций */
 const startFlight = () => {
-    if (phase.value !== 'boot' || !stage.value || !host.value) {
+    if (phase.value !== 'loading' || !stage.value || !host.value) {
         return;
     }
 
     phase.value = 'landing';
     window.scrollTo({ top: 0, behavior: 'auto' });
+
+    if (!prefersReducedMotion) {
+        boostStartedAt = performance.now();
+    }
 
     const stageRect = stage.value.getBoundingClientRect();
     const hostRect = host.value.getBoundingClientRect();
@@ -428,13 +414,26 @@ const animate = () => {
 
     lastFrameAt = now;
 
-    if (phase.value === 'boot') {
+    if (phase.value === 'loading') {
         updateIntro(now);
     }
 
     // Раскручивается уже в полёте, а не после приземления
-    if (phase.value !== 'boot' && !prefersReducedMotion && !isDragging.value) {
+    if (phase.value !== 'loading' && !prefersReducedMotion && !isDragging.value) {
         spinAngle += delta * SPIN_SPEED;
+    }
+
+    if (boostStartedAt && !isDragging.value) {
+        // Пять оборотов с затуханием: на выходе скорость доборта нулевая, остаётся холостая
+        const progress = Math.min((now - boostStartedAt) / SPIN_BOOST_DURATION, 1);
+
+        boostAngle = Math.PI * 2 * SPIN_BOOST_TURNS * easeOutCubic(progress);
+
+        if (progress === 1) {
+            // Целое число оборотов — обнуление не сдвигает модель
+            boostStartedAt = 0;
+            boostAngle = 0;
+        }
     }
 
     if (!isDragging.value && (dragVelocity.x || dragVelocity.y)) {
@@ -453,12 +452,8 @@ const animate = () => {
         }
     }
 
-    // Экспоненциальное сглаживание: модель «догоняет» курсор без рывков
-    rotation.x += (target.x - rotation.x) * 0.06;
-    rotation.y += (target.y - rotation.y) * 0.06;
-
-    laptop.rotation.x = BASE_ROTATION_X + rotation.x + dragged.x;
-    laptop.rotation.y = BASE_ROTATION_Y + rotation.y + spinAngle + dragged.y;
+    laptop.rotation.x = BASE_ROTATION_X + dragged.x;
+    laptop.rotation.y = BASE_ROTATION_Y + spinAngle + boostAngle + dragged.y;
 
     if (!prefersReducedMotion) {
         laptop.position.y = -0.35 + Math.sin(now / 1250) * 0.06;
@@ -512,7 +507,7 @@ onMounted(() => {
     scene.add(fillLight);
 
     if (props.intro && !prefersReducedMotion) {
-        phase.value = 'boot';
+        phase.value = 'loading';
         introStartedAt = performance.now();
         setupIntroStage();
     } else {
@@ -537,7 +532,6 @@ onMounted(() => {
     intersectionObserver.observe(host.value as HTMLDivElement);
 
     window.addEventListener('pointermove', onPointerMove, { passive: true });
-    document.addEventListener('pointerleave', onPointerLeave);
     window.addEventListener('pointerup', onPointerUp);
     window.addEventListener('pointercancel', onPointerUp);
 
@@ -553,7 +547,6 @@ onBeforeUnmount(() => {
     }
 
     window.removeEventListener('pointermove', onPointerMove);
-    document.removeEventListener('pointerleave', onPointerLeave);
     window.removeEventListener('pointerup', onPointerUp);
     window.removeEventListener('pointercancel', onPointerUp);
     resizeObserver?.disconnect();
