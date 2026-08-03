@@ -13,7 +13,7 @@ const props = withDefaults(defineProps<{
     /** Проигрывать полноэкранное интро при первой загрузке */
     intro?: boolean;
 }>(), {
-    size: 150,
+    size: 220,
     tilt: 0.45,
     screenText: 'Frontend Developer',
     intro: true
@@ -202,7 +202,7 @@ const buildLaptop = () => {
     hinge.add(screen);
 
     group.position.y = -0.35;
-    group.scale.setScalar(1.15);
+    group.scale.setScalar(1.3);
 
     return group;
 };
