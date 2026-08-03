@@ -23,10 +23,10 @@ const onScreen = computed(() => route.path.startsWith('/works') && isWide.value)
             <!-- Живёт в лейауте, а не во вью — так сцена переживает переходы между страницами -->
             <div
                 class="flex justify-center"
-                :class="{ 'hero-breakout': onScreen }"
+                :class="{ 'hero-breakout mb-10': onScreen }"
             >
                 <v-hero-model
-                    :size="onScreen ? 720 : 300"
+                    :size="onScreen ? 660 : 300"
                     :screen-text="t('hero.role')"
                     :focused="onScreen"
                 >
