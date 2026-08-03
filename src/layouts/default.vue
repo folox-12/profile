@@ -23,10 +23,10 @@ const onScreen = computed(() => route.path.startsWith('/works') && isWide.value)
             <!-- Живёт в лейауте, а не во вью — так сцена переживает переходы между страницами -->
             <div
                 class="flex justify-center"
-                :class="{ 'hero-breakout mb-10': onScreen }"
+                :class="{ 'hero-breakout': onScreen }"
             >
                 <v-hero-model
-                    :size="onScreen ? 660 : 300"
+                    :size="onScreen ? 780 : 300"
                     :screen-text="t('hero.role')"
                     :focused="onScreen"
                 >
@@ -50,9 +50,14 @@ const onScreen = computed(() => route.path.startsWith('/works') && isWide.value)
 </template>
 
 <style scoped>
-/* В фокусе сцена выходит за колонку на всю ширину окна — дисплею нужен весь кадр */
+/* В фокусе сцена выходит за колонку на всю ширину окна — дисплею нужен весь кадр.
+   Отрицательный отступ снизу подтягивает футер под сцену: канва прозрачная,
+   поэтому ноутбук просто накрывает его, а не срезается о край блока */
 .hero-breakout {
+    position: relative;
+    z-index: 1;
     width: 100vw;
     margin-left: calc(50% - 50vw);
+    margin-bottom: -110px;
 }
 </style>

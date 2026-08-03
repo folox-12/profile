@@ -803,6 +803,8 @@ watch(() => [props.screenText, props.screenUser], redrawScreen);
 
 .hero-model__stage--locked {
     cursor: default;
+    /* Сцена накрывает футер — не перехватываем у него клики, страница внутри экрана их вернёт себе */
+    pointer-events: none;
 }
 
 .hero-model__backdrop {
