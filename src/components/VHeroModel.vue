@@ -62,9 +62,12 @@ const TYPING_SPEED = 45;
 const HOLD_AFTER_TYPING = 550;
 const FLIGHT_DURATION = 900;
 
-// Раскрутка после посадки: сколько оборотов и за сколько мс они замедляются до нуля
-const SPIN_TURNS = 5;
-const SPIN_DURATION = 3000;
+// Холостое вращение, рад/с
+const SPIN_SPEED = 0.4;
+// Раскрутка мышью: рад на пиксель, затухание инерции и предел наклона по вертикали
+const DRAG_SENSITIVITY = 0.009;
+const DRAG_FRICTION = 2.6;
+const DRAG_LIMIT_X = 0.85;
 
 const SCREEN_TEXTURE_W = 640;
 const SCREEN_TEXTURE_H = 400;
@@ -99,7 +102,14 @@ let drawnChars = -1;
 let drawnCaret = false;
 let screenIsOn = false;
 let spinAngle = 0;
-let spinStartedAt = 0;
+let lastFrameAt = 0;
+
+// Ручная раскрутка: накопленный поворот, скорость по инерции и состояние захвата
+const dragged = { x: 0, y: 0 };
+const dragVelocity = { x: 0, y: 0 };
+const dragPrev = { x: 0, y: 0 };
+const isDragging = ref(false);
+let dragPointerId = -1;
 
 const easeOutCubic = (value: number) => 1 - Math.pow(1 - value, 3);
 
@@ -226,6 +236,27 @@ const applyPalette = () => {
 };
 
 const onPointerMove = (event: PointerEvent) => {
+    if (isDragging.value) {
+        if (event.pointerId !== dragPointerId) {
+            return;
+        }
+
+        const dx = event.clientX - dragPrev.x;
+        const dy = event.clientY - dragPrev.y;
+
+        dragPrev.x = event.clientX;
+        dragPrev.y = event.clientY;
+
+        dragged.y += dx * DRAG_SENSITIVITY;
+        dragged.x = Math.min(Math.max(dragged.x + dy * DRAG_SENSITIVITY, -DRAG_LIMIT_X), DRAG_LIMIT_X);
+
+        // Скорость последнего движения — она же станет инерцией после отпускания
+        dragVelocity.y = dx * DRAG_SENSITIVITY * 60;
+        dragVelocity.x = dy * DRAG_SENSITIVITY * 60;
+
+        return;
+    }
+
     // Нормализуем позицию курсора относительно центра экрана в диапазон [-1, 1]
     const x = (event.clientX / window.innerWidth) * 2 - 1;
     const y = (event.clientY / window.innerHeight) * 2 - 1;
@@ -238,6 +269,31 @@ const onPointerMove = (event: PointerEvent) => {
 const onPointerLeave = () => {
     target.x = 0;
     target.y = 0;
+};
+
+const onPointerUp = (event: PointerEvent) => {
+    if (!isDragging.value || event.pointerId !== dragPointerId) {
+        return;
+    }
+
+    isDragging.value = false;
+    dragPointerId = -1;
+    stage.value?.releasePointerCapture?.(event.pointerId);
+};
+
+const onPointerDown = (event: PointerEvent) => {
+    if (phase.value !== 'done' || event.button !== 0) {
+        return;
+    }
+
+    event.preventDefault();
+    isDragging.value = true;
+    dragPointerId = event.pointerId;
+    dragPrev.x = event.clientX;
+    dragPrev.y = event.clientY;
+    dragVelocity.x = 0;
+    dragVelocity.y = 0;
+    stage.value?.setPointerCapture?.(event.pointerId);
 };
 
 const resize = () => {
@@ -302,11 +358,6 @@ const finishIntro = () => {
 
     document.body.style.overflow = bodyOverflow;
     phase.value = 'done';
-
-    if (!prefersReducedMotion) {
-        spinStartedAt = performance.now();
-    }
-
     resize();
 };
 
@@ -372,20 +423,32 @@ const animate = () => {
     }
 
     const now = performance.now();
+    // Кадр может «проспать» (свёрнутая вкладка) — ограничиваем шаг, иначе модель дёрнется
+    const delta = lastFrameAt ? Math.min((now - lastFrameAt) / 1000, 0.1) : 0;
+
+    lastFrameAt = now;
 
     if (phase.value === 'boot') {
         updateIntro(now);
     }
 
-    if (spinStartedAt) {
-        // Замедление до нуля ровно на целом числе оборотов — модель встаёт в базовый разворот
-        const progress = Math.min((now - spinStartedAt) / SPIN_DURATION, 1);
+    if (phase.value === 'done' && !prefersReducedMotion && !isDragging.value) {
+        spinAngle += delta * SPIN_SPEED;
+    }
 
-        spinAngle = Math.PI * 2 * SPIN_TURNS * easeOutCubic(progress);
+    if (!isDragging.value && (dragVelocity.x || dragVelocity.y)) {
+        // Инерция после отпускания: докручиваем и гасим трением
+        dragged.y += dragVelocity.y * delta;
+        dragged.x = Math.min(Math.max(dragged.x + dragVelocity.x * delta, -DRAG_LIMIT_X), DRAG_LIMIT_X);
 
-        if (progress === 1) {
-            spinStartedAt = 0;
-            spinAngle = 0;
+        const decay = Math.max(1 - DRAG_FRICTION * delta, 0);
+
+        dragVelocity.x *= decay;
+        dragVelocity.y *= decay;
+
+        if (Math.abs(dragVelocity.x) < 0.001 && Math.abs(dragVelocity.y) < 0.001) {
+            dragVelocity.x = 0;
+            dragVelocity.y = 0;
         }
     }
 
@@ -393,8 +456,8 @@ const animate = () => {
     rotation.x += (target.x - rotation.x) * 0.06;
     rotation.y += (target.y - rotation.y) * 0.06;
 
-    laptop.rotation.x = BASE_ROTATION_X + rotation.x;
-    laptop.rotation.y = BASE_ROTATION_Y + rotation.y + spinAngle;
+    laptop.rotation.x = BASE_ROTATION_X + rotation.x + dragged.x;
+    laptop.rotation.y = BASE_ROTATION_Y + rotation.y + spinAngle + dragged.y;
 
     if (!prefersReducedMotion) {
         laptop.position.y = -0.35 + Math.sin(now / 1250) * 0.06;
@@ -413,6 +476,7 @@ const stop = () => {
     if (frameId) {
         cancelAnimationFrame(frameId);
         frameId = 0;
+        lastFrameAt = 0;
     }
 };
 
@@ -473,6 +537,8 @@ onMounted(() => {
 
     window.addEventListener('pointermove', onPointerMove, { passive: true });
     document.addEventListener('pointerleave', onPointerLeave);
+    window.addEventListener('pointerup', onPointerUp);
+    window.addEventListener('pointercancel', onPointerUp);
 
     start();
 });
@@ -487,6 +553,8 @@ onBeforeUnmount(() => {
 
     window.removeEventListener('pointermove', onPointerMove);
     document.removeEventListener('pointerleave', onPointerLeave);
+    window.removeEventListener('pointerup', onPointerUp);
+    window.removeEventListener('pointercancel', onPointerUp);
     resizeObserver?.disconnect();
     intersectionObserver?.disconnect();
 
@@ -525,6 +593,8 @@ watch(() => props.screenText, redrawScreen);
         <div
             ref="stage"
             class="hero-model__stage"
+            :class="{ 'hero-model__stage--dragging': isDragging }"
+            @pointerdown="onPointerDown"
         ></div>
         <div
             v-if="phase !== 'done'"
@@ -542,6 +612,12 @@ watch(() => props.screenText, redrawScreen);
 .hero-model__stage {
     width: 100%;
     height: 100%;
+    cursor: grab;
+    touch-action: none;
+}
+
+.hero-model__stage--dragging {
+    cursor: grabbing;
 }
 
 .hero-model__backdrop {
