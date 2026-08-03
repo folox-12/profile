@@ -350,7 +350,8 @@ const onPointerUp = (event: PointerEvent) => {
 };
 
 const onPointerDown = (event: PointerEvent) => {
-    if (phase.value !== 'done' || event.button !== 0) {
+    // В фокусе ноутбук зафиксирован: страницу на экране нельзя увести вбок
+    if (phase.value !== 'done' || props.focused || event.button !== 0) {
         return;
     }
 
@@ -546,6 +547,13 @@ const animate = () => {
     const ease = Math.min(delta * FOCUS_EASING, 1);
     const cameraTarget = focused ? CAMERA_FOCUS : CAMERA_IDLE;
 
+    if (focused) {
+        // Накопленный ручной наклон распускаем, чтобы экран смотрел строго вперёд
+        dragged.x += (0 - dragged.x) * ease;
+        dragVelocity.x = 0;
+        dragVelocity.y = 0;
+    }
+
     cameraState.y += (cameraTarget.y - cameraState.y) * ease;
     cameraState.z += (cameraTarget.z - cameraState.z) * ease;
     cameraState.look += (cameraTarget.look - cameraState.look) * ease;
@@ -739,7 +747,10 @@ watch(() => [props.screenText, props.screenUser], redrawScreen);
         <div
             ref="stage"
             class="hero-model__stage"
-            :class="{ 'hero-model__stage--dragging': isDragging }"
+            :class="{
+                'hero-model__stage--dragging': isDragging,
+                'hero-model__stage--locked': focused
+            }"
             @pointerdown="onPointerDown"
         ></div>
         <!-- CSS3D переносит этот блок в плоскость экрана — внутри обычная вёрстка -->
@@ -788,6 +799,10 @@ watch(() => [props.screenText, props.screenUser], redrawScreen);
 
 .hero-model__stage--dragging {
     cursor: grabbing;
+}
+
+.hero-model__stage--locked {
+    cursor: default;
 }
 
 .hero-model__backdrop {
