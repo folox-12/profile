@@ -42,8 +42,8 @@ const PALETTE = {
         screenText: '#b7ecd1'
     },
     dark: {
-        body: 0x32363c,
-        deck: 0x262a2f,
+        body: 0x3a3d40,
+        deck: 0x2a2c2e,
         edge: 0x3d9478,
         key: 0xdff5ec,
         fill: 0x22262b,
@@ -139,6 +139,10 @@ const dragPrev = { x: 0, y: 0 };
 const isDragging = ref(false);
 let dragPointerId = -1;
 
+// Страница на экране показывается не сразу: сначала наезд камеры и полоса загрузки на дисплее
+const screenReady = ref(false);
+let drawnProgress = -1;
+
 const easeOutCubic = (value: number) => 1 - Math.pow(1 - value, 3);
 
 /** Приводит угол к диапазону (-PI, PI] — чтобы доворачивать по кратчайшей дуге */
@@ -179,7 +183,43 @@ const drawScreen = (chars: number, caret: boolean) => {
     screenTexture.needsUpdate = true;
 };
 
-const redrawScreen = () => drawScreen(drawnChars, drawnCaret);
+const redrawScreen = () => {
+    drawnProgress = -1;
+    drawScreen(drawnChars, drawnCaret);
+};
+
+/** Экран загрузки страницы: приглашение и полоса, пока камера подъезжает */
+const drawLoading = (progress: number) => {
+    if (!screenContext || !screenTexture) {
+        return;
+    }
+
+    const ctx = screenContext;
+    const palette = isDark.value ? PALETTE.dark : PALETTE.light;
+    const barWidth = SCREEN_TEXTURE_W - 112;
+    const barY = SCREEN_TEXTURE_H / 2 + 12;
+
+    ctx.fillStyle = '#0e1317';
+    ctx.fillRect(0, 0, SCREEN_TEXTURE_W, SCREEN_TEXTURE_H);
+
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.font = '30px ui-monospace, SFMono-Regular, Menlo, monospace';
+    ctx.fillStyle = 'rgba(255, 255, 255, .45)';
+    ctx.fillText(`${props.screenUser}:~$ open ~/works`, 56, SCREEN_TEXTURE_H / 2 - 46);
+
+    ctx.fillStyle = 'rgba(255, 255, 255, .12)';
+    ctx.fillRect(56, barY, barWidth, 14);
+
+    ctx.fillStyle = palette.screenText;
+    ctx.fillRect(56, barY, barWidth * progress, 14);
+
+    ctx.font = '22px ui-monospace, SFMono-Regular, Menlo, monospace';
+    ctx.fillStyle = 'rgba(255, 255, 255, .35)';
+    ctx.fillText(`${Math.round(progress * 100)}%`, 56, barY + 48);
+
+    screenTexture.needsUpdate = true;
+};
 
 const buildLaptop = () => {
     const group = new THREE.Group();
@@ -536,10 +576,25 @@ const animate = () => {
     }
 
     if (screenObject) {
-        // Страницу показываем, только когда экран уже развёрнут к зрителю
-        const aligned = Math.abs(wrapAngle(laptop.rotation.y - FACE_ROTATION_Y)) < 0.25;
+        // Страницу показываем, только когда экран уже развёрнут к зрителю и камера доехала
+        const aligned = Math.abs(wrapAngle(laptop.rotation.y - FACE_ROTATION_Y)) < 0.2;
+        const zoom = Math.min(Math.max(
+            (CAMERA_IDLE.z - cameraState.z) / (CAMERA_IDLE.z - CAMERA_FOCUS.z), 0), 1);
 
-        screenObject.visible = focused && aligned && phase.value === 'done';
+        screenObject.visible = focused;
+        screenReady.value = focused && aligned && zoom > 0.97;
+
+        if (focused && !screenReady.value) {
+            // Пока идёт наезд, на дисплее крутится полоса загрузки
+            const progress = Math.min(zoom / 0.97, 1) * (aligned ? 1 : 0.6);
+
+            if (Math.abs(progress - drawnProgress) > 0.01) {
+                drawnProgress = progress;
+                drawLoading(progress);
+            }
+        } else if (!focused && drawnProgress >= 0) {
+            redrawScreen();
+        }
     }
 
     renderer.render(scene, camera);
@@ -691,6 +746,7 @@ watch(() => [props.screenText, props.screenUser], redrawScreen);
         <div
             ref="screenSlot"
             class="hero-model__screen bg-card dark:bg-card-dark text-ink dark:text-ink-dark"
+            :class="{ 'hero-model__screen--ready': screenReady }"
         >
             <slot name="screen"></slot>
         </div>
@@ -716,11 +772,18 @@ watch(() => [props.screenText, props.screenUser], redrawScreen);
 }
 
 .hero-model__screen {
+    opacity: 0;
+    transition: opacity 260ms ease;
     overflow: hidden auto;
     padding: 28px 32px;
-    pointer-events: auto;
+    pointer-events: none;
     cursor: auto;
     -webkit-overflow-scrolling: touch;
+}
+
+.hero-model__screen--ready {
+    opacity: 1;
+    pointer-events: auto;
 }
 
 .hero-model__stage--dragging {
