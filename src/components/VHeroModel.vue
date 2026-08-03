@@ -466,7 +466,8 @@ const animate = () => {
         updateIntro(now);
     }
 
-    const focused = props.focused;
+    // Пока идёт интро, фокус не применяем — иначе загрузка на /works стартовала бы уже приближенной
+    const focused = props.focused && phase.value === 'done';
 
     // Раскручивается уже в полёте, а не после приземления. В фокусе — замирает лицом к зрителю
     if (phase.value !== 'loading' && !prefersReducedMotion && !isDragging.value && !focused) {
