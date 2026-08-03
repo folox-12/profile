@@ -62,6 +62,10 @@ const TYPING_SPEED = 45;
 const HOLD_AFTER_TYPING = 550;
 const FLIGHT_DURATION = 900;
 
+// Раскрутка после посадки: сколько оборотов и за сколько мс они замедляются до нуля
+const SPIN_TURNS = 5;
+const SPIN_DURATION = 3000;
+
 const SCREEN_TEXTURE_W = 640;
 const SCREEN_TEXTURE_H = 400;
 
@@ -94,6 +98,8 @@ let bodyOverflow = '';
 let drawnChars = -1;
 let drawnCaret = false;
 let screenIsOn = false;
+let spinAngle = 0;
+let spinStartedAt = 0;
 
 const easeOutCubic = (value: number) => 1 - Math.pow(1 - value, 3);
 
@@ -224,8 +230,9 @@ const onPointerMove = (event: PointerEvent) => {
     const x = (event.clientX / window.innerWidth) * 2 - 1;
     const y = (event.clientY / window.innerHeight) * 2 - 1;
 
+    // Вертикаль инвертирована: наводишься на модель — экран поворачивается к тебе, а не задирается вверх
     target.y = x * props.tilt;
-    target.x = y * props.tilt;
+    target.x = -y * props.tilt;
 };
 
 const onPointerLeave = () => {
@@ -295,6 +302,11 @@ const finishIntro = () => {
 
     document.body.style.overflow = bodyOverflow;
     phase.value = 'done';
+
+    if (!prefersReducedMotion) {
+        spinStartedAt = performance.now();
+    }
+
     resize();
 };
 
@@ -365,12 +377,24 @@ const animate = () => {
         updateIntro(now);
     }
 
+    if (spinStartedAt) {
+        // Замедление до нуля ровно на целом числе оборотов — модель встаёт в базовый разворот
+        const progress = Math.min((now - spinStartedAt) / SPIN_DURATION, 1);
+
+        spinAngle = Math.PI * 2 * SPIN_TURNS * easeOutCubic(progress);
+
+        if (progress === 1) {
+            spinStartedAt = 0;
+            spinAngle = 0;
+        }
+    }
+
     // Экспоненциальное сглаживание: модель «догоняет» курсор без рывков
     rotation.x += (target.x - rotation.x) * 0.06;
     rotation.y += (target.y - rotation.y) * 0.06;
 
     laptop.rotation.x = BASE_ROTATION_X + rotation.x;
-    laptop.rotation.y = BASE_ROTATION_Y + rotation.y;
+    laptop.rotation.y = BASE_ROTATION_Y + rotation.y + spinAngle;
 
     if (!prefersReducedMotion) {
         laptop.position.y = -0.35 + Math.sin(now / 1250) * 0.06;
