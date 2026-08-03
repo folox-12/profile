@@ -80,20 +80,19 @@ const FACE_ROTATION_Y = 0;
 const FOCUS_EASING = 2.6;
 
 const MODEL_SCALE = 1.3;
-const MODEL_CENTER_Y = 0.625;
 // Центр вертикальной крышки — в него целится камера, когда уходит вплотную к экрану
 const SCREEN_CENTER_Y = 0.664;
 
 // Камера в трёх состояниях: обычное, вся панель и вплотную к дисплею
 const CAMERA_IDLE = { y: 0.35, z: 5.4, look: 0 };
-// Панель целиком в кадре
-const CAMERA_FOCUS = { y: MODEL_CENTER_Y, z: 2.4, look: MODEL_CENTER_Y };
+// Дисплей во всю ширину кадра; рамка и кромки корпуса уходят за края
+const CAMERA_FOCUS = { y: SCREEN_CENTER_Y, z: 2.2, look: SCREEN_CENTER_Y };
 // Дисплей перекрывает кадр по обеим сторонам: рамки и корпуса не видно
 const CAMERA_DETAIL = { y: SCREEN_CENTER_Y, z: 1.95, look: SCREEN_CENTER_Y };
 
-// Экран как DOM. Ширина макета берётся с запасом над реальным размером дисплея
-// на экране: CSS3D тогда ужимает слой, а не растягивает, и текст остаётся чётким
-const SCREEN_DOM_W = 1200;
+// Экран как DOM. Ширина макета близка к реальному размеру дисплея на экране:
+// сильное расхождение либо мылит текст, либо делает содержимое мелким
+const SCREEN_DOM_W = 1050;
 
 // Тайминги интро в мс от старта сцены
 const LID_OPEN_FROM = 150;
@@ -891,7 +890,7 @@ watch(() => props.detail, () => {
     opacity: 0;
     transition: opacity 260ms ease;
     overflow: hidden auto;
-    padding: 28px 32px;
+    padding: 22px 26px;
     pointer-events: none;
     cursor: auto;
     -webkit-overflow-scrolling: touch;

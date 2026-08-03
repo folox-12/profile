@@ -103,7 +103,7 @@ onUnmounted(() => {
                          @mouseleave="deactivateCard(id)"
                          @focusin="activateCard(id, media.length)"
                          @focusout="deactivateCard(id)">
-                <div class="card-media relative w-full h-[200px] rounded-[10px] overflow-hidden bg-imgbg dark:bg-imgbg-dark ring-1 ring-black/5 dark:ring-white/5">
+                <div class="card-media relative w-full h-[240px] rounded-[10px] overflow-hidden bg-imgbg dark:bg-imgbg-dark ring-1 ring-black/5 dark:ring-white/5">
                     <template v-for="(item, imgKey) in media" :key="imgKey">
                         <video v-if="item.type === 'video' && imgKey === currentIndex(id) && hovering[id]"
                                class="absolute inset-0 w-full h-full object-cover"
