@@ -8,6 +8,9 @@ import { useI18n } from 'vue-i18n';
 const route = useRoute();
 const { t } = useI18n();
 const fullPath = computed(() => route.fullPath);
+
+// На разделе работ страница показывается не под ноутбуком, а прямо на его экране
+const onScreen = computed(() => route.path.startsWith('/works'));
 </script>
 
 <template>
@@ -17,12 +20,18 @@ const fullPath = computed(() => route.fullPath);
             <!-- Живёт в лейауте, а не во вью — так сцена переживает переходы между страницами -->
             <div class="flex justify-center">
                 <v-hero-model
-                    :size="300"
+                    :size="onScreen ? 620 : 300"
                     :screen-text="t('hero.role')"
-                />
+                    :focused="onScreen"
+                >
+                    <template #screen>
+                        <router-view v-if="onScreen" />
+                    </template>
+                </v-hero-model>
             </div>
             <main class="flex-grow pb-20">
-                <div v-motion-slide-visible-bottom
+                <div v-if="!onScreen"
+                     v-motion-slide-visible-bottom
                      :key="fullPath">
                     <router-view />
                 </div>

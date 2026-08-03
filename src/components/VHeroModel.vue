@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import * as THREE from 'three';
+import { CSS3DObject, CSS3DRenderer } from 'three/examples/jsm/renderers/CSS3DRenderer.js';
 import { useDarkModeClass } from '@/composable/useDarkModeClass';
 
 const props = withDefaults(defineProps<{
@@ -12,15 +13,19 @@ const props = withDefaults(defineProps<{
     screenText?: string;
     /** Проигрывать полноэкранное интро при первой загрузке */
     intro?: boolean;
+    /** Приблизить ноутбук и показать на экране содержимое слота screen */
+    focused?: boolean;
 }>(), {
     size: 300,
     screenUser: 'vasilev_sergey',
     screenText: 'Frontend Developer',
-    intro: true
+    intro: true,
+    focused: false
 });
 
 const host = ref<HTMLDivElement | null>(null);
 const stage = ref<HTMLDivElement | null>(null);
+const screenSlot = ref<HTMLDivElement | null>(null);
 const { isDark } = useDarkModeClass();
 
 type Phase = 'loading' | 'landing' | 'done';
@@ -53,6 +58,18 @@ const BASE_ROTATION_Y = -0.38;
 const LID_CLOSED = -1.52;
 const LID_OPEN = -0.28;
 
+// Разворот лицом к зрителю, когда на экране показывается страница
+const FACE_ROTATION_X = -0.06;
+const FACE_ROTATION_Y = 0;
+const FOCUS_EASING = 2.6;
+
+// Камера в двух состояниях: обычное и приближенное к экрану
+const CAMERA_IDLE = { y: 0.35, z: 5.4, look: 0 };
+const CAMERA_FOCUS = { y: 0.62, z: 2.75, look: 0.62 };
+
+// Экран как DOM: размер в CSS-пикселях и мировая ширина плоскости под него
+const SCREEN_DOM_W = 960;
+
 // Тайминги интро в мс от старта сцены
 const LID_OPEN_FROM = 150;
 const LID_OPEN_TO = 900;
@@ -76,6 +93,8 @@ const SCREEN_TEXTURE_W = 640;
 const SCREEN_TEXTURE_H = 400;
 
 let renderer: THREE.WebGLRenderer | null = null;
+let cssRenderer: CSS3DRenderer | null = null;
+let screenObject: CSS3DObject | null = null;
 let scene: THREE.Scene | null = null;
 let camera: THREE.PerspectiveCamera | null = null;
 let laptop: THREE.Group | null = null;
@@ -102,6 +121,9 @@ let drawnChars = -1;
 let drawnCaret = false;
 let screenIsOn = false;
 let spinAngle = 0;
+let faceOffset = 0;
+let baseRotationX = BASE_ROTATION_X;
+const cameraState = { ...CAMERA_IDLE };
 let boostAngle = 0;
 let boostStartedAt = 0;
 let lastFrameAt = 0;
@@ -114,6 +136,9 @@ const isDragging = ref(false);
 let dragPointerId = -1;
 
 const easeOutCubic = (value: number) => 1 - Math.pow(1 - value, 3);
+
+/** Приводит угол к диапазону (-PI, PI] — чтобы доворачивать по кратчайшей дуге */
+const wrapAngle = (value: number) => Math.atan2(Math.sin(value), Math.cos(value));
 
 const drawScreen = (chars: number, caret: boolean) => {
     if (!screenContext || !screenTexture) {
@@ -215,9 +240,23 @@ const buildLaptop = () => {
     addEdges(lid);
     hinge.add(lid);
 
-    const screen = new THREE.Mesh(new THREE.PlaneGeometry(width * 0.9, lidHeight * 0.86), display);
+    const screenWidth = width * 0.9;
+    const screenHeight = lidHeight * 0.86;
+    const screen = new THREE.Mesh(new THREE.PlaneGeometry(screenWidth, screenHeight), display);
     screen.position.set(0, lidHeight / 2, 0.002);
     hinge.add(screen);
+
+    // Тот же прямоугольник, но из DOM: CSS3D кладёт настоящую вёрстку в плоскость экрана
+    if (screenSlot.value) {
+        screenSlot.value.style.width = `${SCREEN_DOM_W}px`;
+        screenSlot.value.style.height = `${Math.round(SCREEN_DOM_W * (screenHeight / screenWidth))}px`;
+
+        screenObject = new CSS3DObject(screenSlot.value);
+        screenObject.position.set(0, lidHeight / 2, 0.004);
+        screenObject.scale.setScalar(screenWidth / SCREEN_DOM_W);
+        screenObject.visible = false;
+        hinge.add(screenObject);
+    }
 
     group.position.y = -0.35;
     group.scale.setScalar(1.3);
@@ -296,6 +335,7 @@ const resize = () => {
     camera.updateProjectionMatrix();
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(clientWidth, clientHeight, false);
+    cssRenderer?.setSize(clientWidth, clientHeight);
 };
 
 const introSize = () => {
@@ -422,8 +462,10 @@ const animate = () => {
         updateIntro(now);
     }
 
-    // Раскручивается уже в полёте, а не после приземления
-    if (phase.value !== 'loading' && !prefersReducedMotion && !isDragging.value) {
+    const focused = props.focused;
+
+    // Раскручивается уже в полёте, а не после приземления. В фокусе — замирает лицом к зрителю
+    if (phase.value !== 'loading' && !prefersReducedMotion && !isDragging.value && !focused) {
         spinAngle += delta * SPIN_SPEED;
     }
 
@@ -456,14 +498,41 @@ const animate = () => {
         }
     }
 
-    laptop.rotation.x = BASE_ROTATION_X + dragged.x;
-    laptop.rotation.y = BASE_ROTATION_Y + spinAngle + boostAngle + dragged.y;
+    const ease = Math.min(delta * FOCUS_EASING, 1);
+    const cameraTarget = focused ? CAMERA_FOCUS : CAMERA_IDLE;
+
+    cameraState.y += (cameraTarget.y - cameraState.y) * ease;
+    cameraState.z += (cameraTarget.z - cameraState.z) * ease;
+    cameraState.look += (cameraTarget.look - cameraState.look) * ease;
+
+    camera.position.set(0, cameraState.y, cameraState.z);
+    camera.lookAt(0, cameraState.look, 0);
+
+    baseRotationX += ((focused ? FACE_ROTATION_X : BASE_ROTATION_X) - baseRotationX) * ease;
+
+    if (focused && !isDragging.value) {
+        // Доворачиваем к «лицу» по кратчайшей дуге, не трогая накопленные обороты
+        const current = BASE_ROTATION_Y + spinAngle + boostAngle + dragged.y + faceOffset;
+
+        faceOffset += wrapAngle(FACE_ROTATION_Y - current) * ease;
+    }
+
+    laptop.rotation.x = baseRotationX + dragged.x;
+    laptop.rotation.y = BASE_ROTATION_Y + spinAngle + boostAngle + dragged.y + faceOffset;
 
     if (!prefersReducedMotion) {
-        laptop.position.y = -0.35 + Math.sin(now / 1250) * 0.06;
+        laptop.position.y = -0.35 + Math.sin(now / 1250) * 0.06 * (focused ? 0.3 : 1);
+    }
+
+    if (screenObject) {
+        // Страницу показываем, только когда экран уже развёрнут к зрителю
+        const aligned = Math.abs(wrapAngle(laptop.rotation.y - FACE_ROTATION_Y)) < 0.25;
+
+        screenObject.visible = focused && aligned && phase.value === 'done';
     }
 
     renderer.render(scene, camera);
+    cssRenderer?.render(scene, camera);
 };
 
 const start = () => {
@@ -490,8 +559,8 @@ onMounted(() => {
     scene = new THREE.Scene();
 
     camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
-    camera.position.set(0, 0.35, 5.4);
-    camera.lookAt(0, 0, 0);
+    camera.position.set(0, cameraState.y, cameraState.z);
+    camera.lookAt(0, cameraState.look, 0);
 
     renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setClearColor(0x000000, 0);
@@ -499,6 +568,16 @@ onMounted(() => {
     renderer.domElement.style.width = '100%';
     renderer.domElement.style.height = '100%';
     renderer.domElement.style.display = 'block';
+
+    cssRenderer = new CSS3DRenderer();
+    // Слой поверх канвы: сам он события не ловит, их получает только страница на экране
+    Object.assign(cssRenderer.domElement.style, {
+        position: 'absolute',
+        top: '0',
+        left: '0',
+        pointerEvents: 'none'
+    });
+    stage.value.appendChild(cssRenderer.domElement);
 
     laptop = buildLaptop();
     scene.add(laptop);
@@ -569,8 +648,11 @@ onBeforeUnmount(() => {
     edgeMaterial?.dispose();
     renderer?.dispose();
     renderer?.domElement.remove();
+    cssRenderer?.domElement.remove();
 
     renderer = null;
+    cssRenderer = null;
+    screenObject = null;
     scene = null;
     camera = null;
     laptop = null;
@@ -586,7 +668,7 @@ watch(() => [props.screenText, props.screenUser], redrawScreen);
         ref="host"
         class="hero-model"
         :style="{ height: `${props.size}px` }"
-        aria-hidden="true"
+        :aria-hidden="focused ? undefined : 'true'"
     >
         <div
             ref="stage"
@@ -594,6 +676,13 @@ watch(() => [props.screenText, props.screenUser], redrawScreen);
             :class="{ 'hero-model__stage--dragging': isDragging }"
             @pointerdown="onPointerDown"
         ></div>
+        <!-- CSS3D переносит этот блок в плоскость экрана — внутри обычная вёрстка -->
+        <div
+            ref="screenSlot"
+            class="hero-model__screen bg-card dark:bg-card-dark text-ink dark:text-ink-dark"
+        >
+            <slot name="screen"></slot>
+        </div>
         <div
             v-if="phase !== 'done'"
             class="hero-model__backdrop bg-bg dark:bg-bg-dark"
@@ -608,10 +697,19 @@ watch(() => [props.screenText, props.screenUser], redrawScreen);
 }
 
 .hero-model__stage {
+    position: relative;
     width: 100%;
     height: 100%;
     cursor: grab;
     touch-action: none;
+}
+
+.hero-model__screen {
+    overflow: hidden auto;
+    padding: 28px 32px;
+    pointer-events: auto;
+    cursor: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 .hero-model__stage--dragging {
