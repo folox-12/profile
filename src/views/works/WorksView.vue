@@ -3,7 +3,7 @@ import { useRouteFunction } from '@/composable/useRouteFunction';
 import { PROJECT_WORKS } from '@/constants/projects';
 import { computed, reactive, onUnmounted } from 'vue';
 import { useI18n } from 'vue-i18n';
-const { workName } = useRouteFunction();
+useRouteFunction();
 const { t } = useI18n();
 
 const JS_FRAMEWORKS = new Set([
@@ -84,14 +84,6 @@ onUnmounted(() => {
 
 <template>
     <div>
-        <span class="
-            inline-block
-            mb-6 text-[26px] font-bold
-            pb-2 border-b-[3px] border-ink dark:border-ink-dark
-            "
-        >
-            {{ workName }}
-        </span>
         <div class="works grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-[22px]">
             <router-link v-for="({ id, name, to, media, shortDescription, tags, primaryTech }, key) in ProjectWithDescription"
                          class="
