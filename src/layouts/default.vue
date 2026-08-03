@@ -17,7 +17,7 @@ const fullPath = computed(() => route.fullPath);
             <!-- Живёт в лейауте, а не во вью — так сцена переживает переходы между страницами -->
             <div class="flex justify-center">
                 <v-hero-model
-                    :size="280"
+                    :size="300"
                     :screen-text="t('hero.role')"
                 />
             </div>

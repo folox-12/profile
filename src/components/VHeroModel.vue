@@ -11,7 +11,7 @@ const props = withDefaults(defineProps<{
     /** Проигрывать полноэкранное интро при первой загрузке */
     intro?: boolean;
 }>(), {
-    size: 280,
+    size: 300,
     screenText: 'Frontend Developer',
     intro: true
 });
@@ -217,7 +217,7 @@ const buildLaptop = () => {
     hinge.add(screen);
 
     group.position.y = -0.35;
-    group.scale.setScalar(1.15);
+    group.scale.setScalar(1.3);
 
     return group;
 };
@@ -486,7 +486,7 @@ onMounted(() => {
     scene = new THREE.Scene();
 
     camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
-    camera.position.set(0, 0.35, 5);
+    camera.position.set(0, 0.35, 5.4);
     camera.lookAt(0, 0, 0);
 
     renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
