@@ -91,6 +91,7 @@ const blocks = {
                         text-sm font-bold
                         bg-mint dark:bg-mint-dark
                         text-onmint
+                        dark:text-white
                         border border-mintline dark:border-mintline-dark
                         shadow-[0_2px_0_#7cc79c] dark:shadow-[0_2px_0_#3d9478]
                         hover:brightness-95
