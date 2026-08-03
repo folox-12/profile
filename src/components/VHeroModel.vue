@@ -42,8 +42,8 @@ const PALETTE = {
         screenText: '#b7ecd1'
     },
     dark: {
-        body: 0x3a3d40,
-        deck: 0x2a2c2e,
+        body: 0x4d5155,
+        deck: 0x3a3d40,
         edge: 0x3d9478,
         key: 0xdff5ec,
         fill: 0x22262b,
