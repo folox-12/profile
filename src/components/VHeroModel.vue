@@ -117,7 +117,6 @@ let hinge: THREE.Group | null = null;
 let baseFold: THREE.Group | null = null;
 let bodyMaterial: THREE.MeshStandardMaterial | null = null;
 let deckMaterial: THREE.MeshStandardMaterial | null = null;
-let screenMaterial: THREE.MeshStandardMaterial | null = null;
 let edgeMaterial: THREE.LineBasicMaterial | null = null;
 let keyLight: THREE.DirectionalLight | null = null;
 let fillLight: THREE.HemisphereLight | null = null;
@@ -259,7 +258,6 @@ const buildLaptop = () => {
 
     bodyMaterial = body;
     deckMaterial = deck;
-    screenMaterial = display;
     edgeMaterial = edge;
 
     const width = LAPTOP_WIDTH;
@@ -301,6 +299,19 @@ const buildLaptop = () => {
     lid.position.set(0, lidHeight / 2, -0.035);
     addEdges(lid);
     hinge.add(lid);
+
+    // Глазок камеры в рамке над экраном: тёмная линза и точка блика
+    const lensMaterial = new THREE.MeshStandardMaterial({ color: 0x11151a, roughness: 0.25, metalness: 0.4 });
+    const lens = new THREE.Mesh(new THREE.CircleGeometry(0.024, 20), lensMaterial);
+    lens.position.set(0, lidHeight - 0.05, 0.004);
+    hinge.add(lens);
+
+    const glare = new THREE.Mesh(
+        new THREE.CircleGeometry(0.008, 12),
+        new THREE.MeshBasicMaterial({ color: 0x9fb4c4, transparent: true, opacity: 0.7 })
+    );
+    glare.position.set(-0.006, lidHeight - 0.044, 0.006);
+    hinge.add(glare);
 
     const screenWidth = width * 0.9;
     const screenHeight = lidHeight * 0.86;
@@ -738,14 +749,14 @@ onBeforeUnmount(() => {
     scene?.traverse((object) => {
         if (object instanceof THREE.Mesh || object instanceof THREE.LineSegments) {
             object.geometry.dispose();
+
+            const material = object.material;
+
+            (Array.isArray(material) ? material : [material]).forEach((item) => item.dispose());
         }
     });
 
     screenTexture?.dispose();
-    bodyMaterial?.dispose();
-    deckMaterial?.dispose();
-    screenMaterial?.dispose();
-    edgeMaterial?.dispose();
     renderer?.dispose();
     renderer?.domElement.remove();
     cssRenderer?.domElement.remove();
