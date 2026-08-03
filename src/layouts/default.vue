@@ -17,13 +17,16 @@ const onScreen = computed(() => route.path.startsWith('/works') && isWide.value)
 </script>
 
 <template>
-    <div class="flex flex-col h-full bg-bg dark:bg-bg-dark text-ink dark:text-ink-dark transition-colors duration-300">
+    <div class="flex flex-col h-full overflow-x-clip bg-bg dark:bg-bg-dark text-ink dark:text-ink-dark transition-colors duration-300">
         <div class="w-full max-w-[960px] mx-auto px-6 flex flex-col flex-grow">
             <v-header />
             <!-- Живёт в лейауте, а не во вью — так сцена переживает переходы между страницами -->
-            <div class="flex justify-center">
+            <div
+                class="flex justify-center"
+                :class="{ 'hero-breakout': onScreen }"
+            >
                 <v-hero-model
-                    :size="onScreen ? 620 : 300"
+                    :size="onScreen ? 720 : 300"
                     :screen-text="t('hero.role')"
                     :focused="onScreen"
                 >
@@ -45,3 +48,11 @@ const onScreen = computed(() => route.path.startsWith('/works') && isWide.value)
         </div>
     </div>
 </template>
+
+<style scoped>
+/* В фокусе сцена выходит за колонку на всю ширину окна — дисплею нужен весь кадр */
+.hero-breakout {
+    width: 100vw;
+    margin-left: calc(50% - 50vw);
+}
+</style>
