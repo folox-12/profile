@@ -4,7 +4,7 @@ import * as THREE from 'three';
 import { useDarkModeClass } from '@/composable/useDarkModeClass';
 
 const props = withDefaults(defineProps<{
-    /** Размер модели в px (квадрат) в обычном, «припаркованном» состоянии */
+    /** Высота области под сцену в px; по ширине она растягивается на весь контейнер */
     size?: number;
     /** Текст, который печатается на экране во время загрузки */
     screenText?: string;
@@ -358,7 +358,8 @@ const startFlight = () => {
 
     const stageRect = stage.value.getBoundingClientRect();
     const hostRect = host.value.getBoundingClientRect();
-    const scale = hostRect.width / stageRect.width;
+    // Считаем по высоте: область под сцену шире квадрата интро, а размер модели задаёт вертикаль кадра
+    const scale = hostRect.height / stageRect.height;
     const dx = hostRect.left + hostRect.width / 2 - (stageRect.left + stageRect.width / 2);
     const dy = hostRect.top + hostRect.height / 2 - (stageRect.top + stageRect.height / 2);
 
@@ -581,7 +582,7 @@ watch(() => props.screenText, redrawScreen);
     <div
         ref="host"
         class="hero-model"
-        :style="{ width: `${props.size}px`, height: `${props.size}px` }"
+        :style="{ height: `${props.size}px` }"
         aria-hidden="true"
     >
         <div
@@ -600,7 +601,7 @@ watch(() => props.screenText, redrawScreen);
 
 <style scoped>
 .hero-model {
-    flex-shrink: 0;
+    width: 100%;
 }
 
 .hero-model__stage {
