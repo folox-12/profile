@@ -4,20 +4,10 @@ import VHeroModel from '@/components/VHeroModel.vue';
 import { computed } from 'vue';
 import { useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
-import { PROJECT_WORKS } from '@/constants/projects';
 
 const route = useRoute();
 const { t } = useI18n();
 const fullPath = computed(() => route.fullPath);
-
-// На страницах работ ноутбук разворачивается к зрителю и показывает проекты как приложения
-const apps = computed(() => {
-    if (!route.path.startsWith('/works')) {
-        return [];
-    }
-
-    return PROJECT_WORKS.map(({ name, preview }) => ({ name, preview }));
-});
 </script>
 
 <template>
@@ -29,7 +19,6 @@ const apps = computed(() => {
                 <v-hero-model
                     :size="300"
                     :screen-text="t('hero.role')"
-                    :apps="apps"
                 />
             </div>
             <main class="flex-grow pb-20">

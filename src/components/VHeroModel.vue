@@ -12,14 +12,11 @@ const props = withDefaults(defineProps<{
     screenText?: string;
     /** Проигрывать полноэкранное интро при первой загрузке */
     intro?: boolean;
-    /** Приложения на экране: пока список не пуст, ноутбук разворачивается к зрителю и показывает их */
-    apps?: { name: string, preview?: string }[];
 }>(), {
     size: 300,
     screenUser: 'vasilev_sergey',
     screenText: 'Frontend Developer',
-    intro: true,
-    apps: () => []
+    intro: true
 });
 
 const host = ref<HTMLDivElement | null>(null);
@@ -55,13 +52,6 @@ const BASE_ROTATION_Y = -0.38;
 
 const LID_CLOSED = -1.52;
 const LID_OPEN = -0.28;
-
-// Разворот «лицом к зрителю», когда на экране показываются приложения
-const FACE_ROTATION_X = -0.12;
-const FACE_ROTATION_Y = 0;
-// Скорость доворота и мигания экрана при смене содержимого
-const FACE_EASING = 3;
-const SCREEN_BLINK = 160;
 
 // Тайминги интро в мс от старта сцены
 const LID_OPEN_FROM = 150;
@@ -112,9 +102,6 @@ let drawnChars = -1;
 let drawnCaret = false;
 let screenIsOn = false;
 let spinAngle = 0;
-let faceOffset = 0;
-let baseRotationX = BASE_ROTATION_X;
-let blinkTimer = 0;
 let boostAngle = 0;
 let boostStartedAt = 0;
 let lastFrameAt = 0;
@@ -126,96 +113,7 @@ const dragPrev = { x: 0, y: 0 };
 const isDragging = ref(false);
 let dragPointerId = -1;
 
-const appImages = new Map<string, HTMLImageElement>();
-
 const easeOutCubic = (value: number) => 1 - Math.pow(1 - value, 3);
-
-/** Приводит угол к диапазону (-PI, PI] — чтобы доворачивать по кратчайшей дуге */
-const wrapAngle = (value: number) => Math.atan2(Math.sin(value), Math.cos(value));
-
-const roundedRect = (ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) => {
-    ctx.beginPath();
-
-    if (ctx.roundRect) {
-        ctx.roundRect(x, y, w, h, r);
-        return;
-    }
-
-    ctx.moveTo(x + r, y);
-    ctx.arcTo(x + w, y, x + w, y + h, r);
-    ctx.arcTo(x + w, y + h, x, y + h, r);
-    ctx.arcTo(x, y + h, x, y, r);
-    ctx.arcTo(x, y, x + w, y, r);
-    ctx.closePath();
-};
-
-/** Картинка вписывается в плитку по короткой стороне, лишнее обрезается */
-const drawCover = (ctx: CanvasRenderingContext2D, image: HTMLImageElement, x: number, y: number, size: number) => {
-    const side = Math.min(image.naturalWidth, image.naturalHeight);
-    const sx = (image.naturalWidth - side) / 2;
-    const sy = (image.naturalHeight - side) / 2;
-
-    ctx.drawImage(image, sx, sy, side, side, x, y, size, size);
-};
-
-const drawDesktop = (ctx: CanvasRenderingContext2D) => {
-    const palette = isDark.value ? PALETTE.dark : PALETTE.light;
-    const barHeight = 46;
-
-    ctx.fillStyle = '#171d23';
-    ctx.fillRect(0, 0, SCREEN_TEXTURE_W, barHeight);
-
-    ctx.fillStyle = 'rgba(255, 255, 255, .22)';
-
-    [30, 58, 86].forEach((cx) => {
-        ctx.beginPath();
-        ctx.arc(cx, barHeight / 2, 7, 0, Math.PI * 2);
-        ctx.fill();
-    });
-
-    ctx.textBaseline = 'middle';
-    ctx.textAlign = 'center';
-    ctx.font = '24px ui-monospace, SFMono-Regular, Menlo, monospace';
-    ctx.fillStyle = 'rgba(255, 255, 255, .4)';
-    ctx.fillText(`${props.screenUser} — ~/works`, SCREEN_TEXTURE_W / 2, barHeight / 2);
-
-    const tile = 120;
-    const gap = 44;
-    const apps = props.apps.slice(0, 3);
-    const startX = (SCREEN_TEXTURE_W - (apps.length * tile + (apps.length - 1) * gap)) / 2;
-    const top = 128;
-
-    apps.forEach((app, index) => {
-        const x = startX + index * (tile + gap);
-        const image = app.preview ? appImages.get(app.preview) : undefined;
-
-        ctx.save();
-        roundedRect(ctx, x, top, tile, tile, 24);
-        ctx.clip();
-
-        if (image?.complete && image.naturalWidth) {
-            drawCover(ctx, image, x, top, tile);
-        } else {
-            ctx.fillStyle = palette.screenText;
-            ctx.fillRect(x, top, tile, tile);
-        }
-
-        ctx.restore();
-
-        ctx.save();
-        roundedRect(ctx, x + 0.5, top + 0.5, tile - 1, tile - 1, 24);
-        ctx.strokeStyle = 'rgba(255, 255, 255, .2)';
-        ctx.lineWidth = 2;
-        ctx.stroke();
-        ctx.restore();
-
-        ctx.font = '22px ui-monospace, SFMono-Regular, Menlo, monospace';
-        ctx.fillStyle = 'rgba(255, 255, 255, .75)';
-        ctx.fillText(app.name, x + tile / 2, top + tile + 32);
-    });
-
-    ctx.textAlign = 'left';
-};
 
 const drawScreen = (chars: number, caret: boolean) => {
     if (!screenContext || !screenTexture) {
@@ -229,12 +127,6 @@ const drawScreen = (chars: number, caret: boolean) => {
     ctx.fillRect(0, 0, SCREEN_TEXTURE_W, SCREEN_TEXTURE_H);
 
     if (!screenIsOn) {
-        screenTexture.needsUpdate = true;
-        return;
-    }
-
-    if (props.apps.length) {
-        drawDesktop(ctx);
         screenTexture.needsUpdate = true;
         return;
     }
@@ -259,36 +151,6 @@ const drawScreen = (chars: number, caret: boolean) => {
 };
 
 const redrawScreen = () => drawScreen(drawnChars, drawnCaret);
-
-const loadAppImages = () => {
-    props.apps.forEach(({ preview }) => {
-        if (!preview || appImages.has(preview)) {
-            return;
-        }
-
-        const image = new Image();
-
-        image.onload = redrawScreen;
-        image.src = preview;
-        appImages.set(preview, image);
-    });
-};
-
-/** Экран моргает и загорается уже с новым содержимым */
-const blinkScreen = () => {
-    if (phase.value === 'loading') {
-        return;
-    }
-
-    window.clearTimeout(blinkTimer);
-    screenIsOn = false;
-    redrawScreen();
-
-    blinkTimer = window.setTimeout(() => {
-        screenIsOn = true;
-        redrawScreen();
-    }, SCREEN_BLINK);
-};
 
 const buildLaptop = () => {
     const group = new THREE.Group();
@@ -560,10 +422,8 @@ const animate = () => {
         updateIntro(now);
     }
 
-    const facing = props.apps.length > 0;
-
-    // Раскручивается уже в полёте, а не после приземления. С приложениями на экране — замирает лицом к зрителю
-    if (phase.value !== 'loading' && !prefersReducedMotion && !isDragging.value && !facing) {
+    // Раскручивается уже в полёте, а не после приземления
+    if (phase.value !== 'loading' && !prefersReducedMotion && !isDragging.value) {
         spinAngle += delta * SPIN_SPEED;
     }
 
@@ -596,19 +456,8 @@ const animate = () => {
         }
     }
 
-    const ease = Math.min(delta * FACE_EASING, 1);
-
-    baseRotationX += ((facing ? FACE_ROTATION_X : BASE_ROTATION_X) - baseRotationX) * ease;
-
-    if (facing && !isDragging.value) {
-        // Доворачиваем по кратчайшей дуге к «лицу», не трогая накопленные обороты
-        const current = BASE_ROTATION_Y + spinAngle + boostAngle + dragged.y + faceOffset;
-
-        faceOffset += wrapAngle(FACE_ROTATION_Y - current) * ease;
-    }
-
-    laptop.rotation.x = baseRotationX + dragged.x;
-    laptop.rotation.y = BASE_ROTATION_Y + spinAngle + boostAngle + dragged.y + faceOffset;
+    laptop.rotation.x = BASE_ROTATION_X + dragged.x;
+    laptop.rotation.y = BASE_ROTATION_Y + spinAngle + boostAngle + dragged.y;
 
     if (!prefersReducedMotion) {
         laptop.position.y = -0.35 + Math.sin(now / 1250) * 0.06;
@@ -670,7 +519,6 @@ onMounted(() => {
         drawnChars = props.screenText.length;
     }
 
-    loadAppImages();
     applyPalette();
     resize();
 
@@ -697,7 +545,6 @@ onMounted(() => {
 onBeforeUnmount(() => {
     stop();
     window.clearTimeout(flightTimer);
-    window.clearTimeout(blinkTimer);
 
     if (phase.value !== 'done') {
         document.body.style.overflow = bodyOverflow;
@@ -732,10 +579,6 @@ onBeforeUnmount(() => {
 
 watch(isDark, applyPalette);
 watch(() => [props.screenText, props.screenUser], redrawScreen);
-watch(() => props.apps, () => {
-    loadAppImages();
-    blinkScreen();
-}, { deep: true });
 </script>
 
 <template>
