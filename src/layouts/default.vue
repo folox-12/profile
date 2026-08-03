@@ -24,6 +24,24 @@ const portrait = computed(() => onScreen.value && Boolean(route.params.id));
              предел в VParagraph, поэтому строки не растягиваются вслед за ней -->
         <div class="w-full max-w-[960px] lg:max-w-[1080px] xl:max-w-[1200px] mx-auto px-6 flex flex-col flex-grow">
             <v-header />
+            <!-- Кнопка возврата живёт снаружи ноутбука: внутри экрана она уехала бы вместе
+                 со скроллом страницы, а выйти к витрине нужно из любого места -->
+            <router-link
+                v-if="portrait"
+                to="/works/"
+                class="
+                self-start inline-flex items-center gap-2 mb-2
+                py-2 px-4 rounded-[10px]
+                text-sm font-bold
+                bg-card dark:bg-card-dark
+                border border-black/10 dark:border-white/[.14]
+                transition hover:-translate-y-0.5 hover:border-mintline/60 dark:hover:border-mintline-dark/60
+                focus-visible:ring-2 focus-visible:ring-mintline dark:focus-visible:ring-mintline-dark focus-visible:outline-none
+                "
+            >
+                <span aria-hidden="true">←</span>
+                {{ t('general.backToWorks') }}
+            </router-link>
             <!-- Живёт в лейауте, а не во вью — так сцена переживает переходы между страницами -->
             <div
                 class="flex justify-center"

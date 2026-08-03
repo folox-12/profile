@@ -16,7 +16,8 @@
         "closeMenu": "Close menu",
         "prevImage": "Previous image",
         "nextImage": "Next image",
-        "playVideo": "Play video"
+        "playVideo": "Play video",
+        "backToWorks": "Back to works"
     },
 
     "works": {

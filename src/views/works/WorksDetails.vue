@@ -182,9 +182,16 @@ onMounted(() => {
         </div>
     </div>
 
+    <!-- Внутри экрана ноутбука страница скроллится сама, поэтому переключение проектов
+         прилипает к нижней кромке дисплея и всегда под рукой -->
     <div
         v-if="prevProject || nextProject"
-        class="grid sm:grid-cols-2 gap-4 mt-10 pt-8 border-t border-black/10 dark:border-white/[.14]"
+        class="
+        grid sm:grid-cols-2 gap-4 mt-10 pt-6 pb-1
+        border-t border-black/10 dark:border-white/[.14]
+        md:sticky md:bottom-0 md:z-10
+        md:bg-card/95 md:dark:bg-card-dark/95 md:backdrop-blur
+        "
     >
         <router-link
             v-if="prevProject"

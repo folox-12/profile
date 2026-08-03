@@ -234,17 +234,30 @@ const drawLoading = (progress: number) => {
 
     const ctx = screenContext;
     const palette = isDark.value ? PALETTE.dark : PALETTE.light;
-    const barWidth = SCREEN_TEXTURE_W - 112;
-    const barY = SCREEN_TEXTURE_H / 2 + 12;
 
     ctx.fillStyle = '#0e1317';
     ctx.fillRect(0, 0, SCREEN_TEXTURE_W, SCREEN_TEXTURE_H);
+
+    ctx.save();
+
+    // В портрете модель кренится вместе с текстурой, поэтому рисуем в повёрнутой
+    // системе координат — текст и полоса остаются вертикальными для зрителя
+    if (props.portrait) {
+        ctx.translate(SCREEN_TEXTURE_W / 2, SCREEN_TEXTURE_H / 2);
+        ctx.rotate(Math.PI / 2);
+        ctx.translate(-SCREEN_TEXTURE_H / 2, -SCREEN_TEXTURE_W / 2);
+    }
+
+    const areaWidth = props.portrait ? SCREEN_TEXTURE_H : SCREEN_TEXTURE_W;
+    const areaHeight = props.portrait ? SCREEN_TEXTURE_W : SCREEN_TEXTURE_H;
+    const barWidth = areaWidth - 112;
+    const barY = areaHeight / 2 + 12;
 
     ctx.textAlign = 'left';
     ctx.textBaseline = 'middle';
     ctx.font = '30px ui-monospace, SFMono-Regular, Menlo, monospace';
     ctx.fillStyle = 'rgba(255, 255, 255, .45)';
-    ctx.fillText(`${props.screenUser}:~$ open ~/works`, 56, SCREEN_TEXTURE_H / 2 - 46);
+    ctx.fillText(`${props.screenUser}:~$ open ~/works`, 56, areaHeight / 2 - 46);
 
     ctx.fillStyle = 'rgba(255, 255, 255, .12)';
     ctx.fillRect(56, barY, barWidth, 14);
@@ -255,6 +268,8 @@ const drawLoading = (progress: number) => {
     ctx.font = '22px ui-monospace, SFMono-Regular, Menlo, monospace';
     ctx.fillStyle = 'rgba(255, 255, 255, .35)';
     ctx.fillText(`${Math.round(progress * 100)}%`, 56, barY + 48);
+
+    ctx.restore();
 
     screenTexture.needsUpdate = true;
 };
@@ -849,7 +864,10 @@ onBeforeUnmount(() => {
 
 watch(isDark, applyPalette);
 watch(() => [props.screenText, props.screenUser], redrawScreen);
-watch(() => props.portrait, applyScreenOrientation);
+watch(() => props.portrait, () => {
+    applyScreenOrientation();
+    drawnProgress = -1;
+});
 </script>
 
 <template>
