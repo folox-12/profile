@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import * as THREE from 'three';
 import { CSS3DObject, CSS3DRenderer } from 'three/examples/jsm/renderers/CSS3DRenderer.js';
 import { useDarkModeClass } from '@/composable/useDarkModeClass';
 
 const props = withDefaults(defineProps<{
-    /** Высота области под сцену в px; по ширине она растягивается на весь контейнер */
-    size?: number;
+    /** Высота области под сцену: число трактуется как px, строка — как CSS-значение */
+    size?: number | string;
     /** Ник в приглашении терминала на экране */
     screenUser?: string;
     /** Текст, который печатается на экране во время загрузки */
@@ -91,7 +91,7 @@ const CAMERA_IDLE = { y: 0.35, z: 5.4, look: 0 };
 // Ближе уже некуда: панель по высоте упирается в кадр
 const CAMERA_FOCUS = { y: MODEL_CENTER_Y, z: 2.4, look: MODEL_CENTER_Y };
 // В портрете вертикально встаёт длинная сторона, поэтому камера отъезжает
-const CAMERA_PORTRAIT = { y: MODEL_CENTER_Y, z: 3.2, look: MODEL_CENTER_Y };
+const CAMERA_PORTRAIT = { y: MODEL_CENTER_Y, z: 3.5, look: MODEL_CENTER_Y };
 
 // Экран как DOM. Ширина макета берётся с запасом над реальным размером дисплея
 // на экране: CSS3D тогда ужимает слой, а не растягивает, и текст остаётся чётким
@@ -164,6 +164,8 @@ const dragVelocity = { x: 0, y: 0 };
 const dragPrev = { x: 0, y: 0 };
 const isDragging = ref(false);
 let dragPointerId = -1;
+
+const hostHeight = computed(() => (typeof props.size === 'number' ? `${props.size}px` : props.size));
 
 // Страница на экране показывается не сразу: сначала наезд камеры и полоса загрузки на дисплее
 const screenReady = ref(false);
@@ -244,7 +246,7 @@ const drawLoading = (progress: number) => {
     // системе координат — текст и полоса остаются вертикальными для зрителя
     if (props.portrait) {
         ctx.translate(SCREEN_TEXTURE_W / 2, SCREEN_TEXTURE_H / 2);
-        ctx.rotate(Math.PI / 2);
+        ctx.rotate(-Math.PI / 2);
         ctx.translate(-SCREEN_TEXTURE_H / 2, -SCREEN_TEXTURE_W / 2);
     }
 
@@ -874,7 +876,7 @@ watch(() => props.portrait, () => {
     <div
         ref="host"
         class="hero-model"
-        :style="{ height: `${props.size}px` }"
+        :style="{ height: hostHeight }"
         :aria-hidden="focused ? undefined : 'true'"
     >
         <div

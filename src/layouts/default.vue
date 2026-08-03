@@ -45,10 +45,10 @@ const portrait = computed(() => onScreen.value && Boolean(route.params.id));
             <!-- Живёт в лейауте, а не во вью — так сцена переживает переходы между страницами -->
             <div
                 class="flex justify-center"
-                :class="{ 'hero-breakout': onScreen }"
+                :class="{ 'hero-breakout': onScreen && !portrait }"
             >
                 <v-hero-model
-                    :size="onScreen ? 820 : 300"
+                    :size="portrait ? 'min(880px, 78vh)' : (onScreen ? 820 : 300)"
                     :screen-text="t('hero.role')"
                     :focused="onScreen"
                     :portrait="portrait"
