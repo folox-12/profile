@@ -15,12 +15,15 @@ const props = withDefaults(defineProps<{
     intro?: boolean;
     /** Приблизить ноутбук и показать на экране содержимое слота screen */
     focused?: boolean;
+    /** Повернуть сложенный ноутбук вертикально — под длинную страницу */
+    portrait?: boolean;
 }>(), {
     size: 300,
     screenUser: 'vasilev_sergey',
     screenText: 'Frontend Developer',
     intro: true,
-    focused: false
+    focused: false,
+    portrait: false
 });
 
 const host = ref<HTMLDivElement | null>(null);
@@ -76,11 +79,19 @@ const FACE_ROTATION_X = 0;
 const FACE_ROTATION_Y = 0;
 const FOCUS_EASING = 2.6;
 
-// Камера в двух состояниях: обычное и приближенное к экрану
+// Модель вращается вокруг собственного центра, а не вокруг петли:
+// без этого при повороте в портрет панель уезжала бы вбок
+const MODEL_PIVOT_Y = 0.75;
+const MODEL_CENTER_Y = 0.625;
+const MODEL_SCALE = 1.3;
+const PORTRAIT_ROLL = -Math.PI / 2;
+
+// Камера в трёх состояниях: обычное, альбомный фокус и портретный
 const CAMERA_IDLE = { y: 0.35, z: 5.4, look: 0 };
-// Сложенный ноутбук — плоская панель от петли (-0.28) до верхней кромки
-// откинутого корпуса (1.66); кадр берёт её целиком с небольшим запасом
-const CAMERA_FOCUS = { y: 0.69, z: 2.6, look: 0.69 };
+// Сложенная панель по ширине укладывается в колонку контента
+const CAMERA_FOCUS = { y: MODEL_CENTER_Y, z: 2.8, look: MODEL_CENTER_Y };
+// В портрете длинная сторона встаёт вертикально, поэтому камера отъезжает
+const CAMERA_PORTRAIT = { y: MODEL_CENTER_Y, z: 3.5, look: MODEL_CENTER_Y };
 
 // Экран как DOM: размер в CSS-пикселях и мировая ширина плоскости под него
 const SCREEN_DOM_W = 960;
@@ -115,6 +126,8 @@ let camera: THREE.PerspectiveCamera | null = null;
 let laptop: THREE.Group | null = null;
 let hinge: THREE.Group | null = null;
 let baseFold: THREE.Group | null = null;
+let screenDom = { width: 0, height: 0 };
+let rollAngle = 0;
 let bodyMaterial: THREE.MeshStandardMaterial | null = null;
 let deckMaterial: THREE.MeshStandardMaterial | null = null;
 let edgeMaterial: THREE.LineBasicMaterial | null = null;
@@ -192,6 +205,18 @@ const drawScreen = (chars: number, caret: boolean) => {
     }
 
     screenTexture.needsUpdate = true;
+};
+
+/** В портрете элемент экрана меняет стороны местами и разворачивается против крена модели */
+const applyScreenOrientation = () => {
+    if (!screenSlot.value || !screenDom.width) {
+        return;
+    }
+
+    const portrait = props.portrait;
+
+    screenSlot.value.style.width = `${portrait ? screenDom.height : screenDom.width}px`;
+    screenSlot.value.style.height = `${portrait ? screenDom.width : screenDom.height}px`;
 };
 
 const redrawScreen = () => {
@@ -321,8 +346,8 @@ const buildLaptop = () => {
 
     // Тот же прямоугольник, но из DOM: CSS3D кладёт настоящую вёрстку в плоскость экрана
     if (screenSlot.value) {
-        screenSlot.value.style.width = `${SCREEN_DOM_W}px`;
-        screenSlot.value.style.height = `${Math.round(SCREEN_DOM_W * (screenHeight / screenWidth))}px`;
+        screenDom = { width: SCREEN_DOM_W, height: Math.round(SCREEN_DOM_W * (screenHeight / screenWidth)) };
+        applyScreenOrientation();
 
         screenObject = new CSS3DObject(screenSlot.value);
         screenObject.position.set(0, lidHeight / 2, 0.004);
@@ -574,7 +599,8 @@ const animate = () => {
     }
 
     const ease = Math.min(delta * FOCUS_EASING, 1);
-    const cameraTarget = focused ? CAMERA_FOCUS : CAMERA_IDLE;
+    const portrait = focused && props.portrait;
+    const cameraTarget = portrait ? CAMERA_PORTRAIT : (focused ? CAMERA_FOCUS : CAMERA_IDLE);
 
     if (focused) {
         // Накопленный ручной наклон распускаем, чтобы экран смотрел строго вперёд
@@ -613,19 +639,29 @@ const animate = () => {
         faceOffset += wrapAngle(FACE_ROTATION_Y - current) * ease;
     }
 
+    const rollTarget = portrait ? PORTRAIT_ROLL : 0;
+
+    rollAngle += (rollTarget - rollAngle) * ease;
+
     laptop.rotation.x = baseRotationX + dragged.x;
     laptop.rotation.y = BASE_ROTATION_Y + spinAngle + boostAngle + dragged.y + faceOffset;
+    laptop.rotation.z = rollAngle;
 
-    if (!prefersReducedMotion) {
-        laptop.position.y = -0.35 + Math.sin(now / 1250) * 0.06 * (focused ? 0.12 : 1);
-    }
+    // Крен вокруг центра панели: сдвиг компенсирует то, что начало группы сидит на петле
+    const bob = prefersReducedMotion ? 0 : Math.sin(now / 1250) * 0.06 * (focused ? 0.12 : 1);
+
+    laptop.position.x = MODEL_SCALE * MODEL_PIVOT_Y * Math.sin(rollAngle);
+    laptop.position.y = MODEL_CENTER_Y - MODEL_SCALE * MODEL_PIVOT_Y * Math.cos(rollAngle) + bob;
 
     if (screenObject) {
         // Страницу показываем, только когда экран уже развёрнут к зрителю и камера доехала
-        const aligned = Math.abs(wrapAngle(laptop.rotation.y - FACE_ROTATION_Y)) < 0.2;
+        const aligned = Math.abs(wrapAngle(laptop.rotation.y - FACE_ROTATION_Y)) < 0.2 &&
+            Math.abs(rollAngle - rollTarget) < 0.02;
         const zoom = Math.min(Math.max(
-            (CAMERA_IDLE.z - cameraState.z) / (CAMERA_IDLE.z - CAMERA_FOCUS.z), 0), 1);
+            (CAMERA_IDLE.z - cameraState.z) / (CAMERA_IDLE.z - cameraTarget.z), 0), 1);
 
+        // Контент разворачиваем обратно, чтобы он остался вертикальным при крене модели
+        screenObject.rotation.z = -rollAngle;
         screenObject.visible = focused;
         screenReady.value = focused && aligned && zoom > 0.97;
 
@@ -773,6 +809,7 @@ onBeforeUnmount(() => {
 
 watch(isDark, applyPalette);
 watch(() => [props.screenText, props.screenUser], redrawScreen);
+watch(() => props.portrait, applyScreenOrientation);
 </script>
 
 <template>

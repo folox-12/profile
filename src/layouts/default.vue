@@ -14,6 +14,8 @@ const fullPath = computed(() => route.fullPath);
 // На узких экранах это нечитаемо, поэтому там всё как раньше: ноутбук сверху, список под ним
 const isWide = useMediaQuery('(min-width: 768px)');
 const onScreen = computed(() => route.path.startsWith('/works') && isWide.value);
+// На карточке проекта панель встаёт вертикально — так помещается вся страница
+const portrait = computed(() => onScreen.value && Boolean(route.params.id));
 </script>
 
 <template>
@@ -21,14 +23,12 @@ const onScreen = computed(() => route.path.startsWith('/works') && isWide.value)
         <div class="w-full max-w-[960px] mx-auto px-6 flex flex-col flex-grow">
             <v-header />
             <!-- Живёт в лейауте, а не во вью — так сцена переживает переходы между страницами -->
-            <div
-                class="flex justify-center"
-                :class="{ 'hero-breakout': onScreen }"
-            >
+            <div class="flex justify-center">
                 <v-hero-model
                     :size="onScreen ? 780 : 300"
                     :screen-text="t('hero.role')"
                     :focused="onScreen"
+                    :portrait="portrait"
                 >
                     <template #screen>
                         <router-view v-if="onScreen" />
@@ -48,16 +48,3 @@ const onScreen = computed(() => route.path.startsWith('/works') && isWide.value)
         </div>
     </div>
 </template>
-
-<style scoped>
-/* В фокусе сцена выходит за колонку на всю ширину окна — дисплею нужен весь кадр.
-   Отрицательный отступ снизу подтягивает футер под сцену: канва прозрачная,
-   поэтому ноутбук просто накрывает его, а не срезается о край блока */
-.hero-breakout {
-    position: relative;
-    z-index: 1;
-    width: 100vw;
-    margin-left: calc(50% - 50vw);
-    margin-bottom: -110px;
-}
-</style>
