@@ -35,7 +35,7 @@ const onScreen = computed(() => route.path.startsWith('/works') && isWide.value)
                     </template>
                 </v-hero-model>
             </div>
-            <main class="flex-grow pb-20">
+            <main class="flex-grow pb-8">
                 <div v-if="!onScreen"
                      v-motion-slide-visible-bottom
                      :key="fullPath">
