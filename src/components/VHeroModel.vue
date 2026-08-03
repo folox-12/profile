@@ -67,7 +67,9 @@ const FOCUS_EASING = 2.6;
 
 // Камера в двух состояниях: обычное и приближенное к экрану
 const CAMERA_IDLE = { y: 0.35, z: 5.4, look: 0 };
-const CAMERA_FOCUS = { y: 0.66, z: 2.3, look: 0.66 };
+// Центр экрана при вертикальной крышке: -0.35 + (0.055 + 0.725) * 1.3.
+// Дистанция подобрана так, чтобы дисплей занял почти весь кадр
+const CAMERA_FOCUS = { y: 0.664, z: 2, look: 0.664 };
 
 // Экран как DOM: размер в CSS-пикселях и мировая ширина плоскости под него
 const SCREEN_DOM_W = 960;
@@ -529,7 +531,7 @@ const animate = () => {
     laptop.rotation.y = BASE_ROTATION_Y + spinAngle + boostAngle + dragged.y + faceOffset;
 
     if (!prefersReducedMotion) {
-        laptop.position.y = -0.35 + Math.sin(now / 1250) * 0.06 * (focused ? 0.3 : 1);
+        laptop.position.y = -0.35 + Math.sin(now / 1250) * 0.06 * (focused ? 0.12 : 1);
     }
 
     if (screenObject) {
