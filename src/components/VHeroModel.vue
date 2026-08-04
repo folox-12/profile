@@ -90,7 +90,7 @@ const FOV_TAN = Math.tan((FOV / 2) * Math.PI / 180);
 const SCREEN_VIEW_W = LAPTOP_WIDTH * 0.94 * MODEL_SCALE;
 const SCREEN_VIEW_H = LID_HEIGHT * 0.9 * MODEL_SCALE;
 // Небольшой запас, чтобы по краям дисплея осталась полоска рамки
-const SCREEN_FIT_MARGIN = 1.03;
+const SCREEN_FIT_MARGIN = 1.02;
 
 // Камера в трёх состояниях: обычное, вся панель и вплотную к дисплею.
 // Дистанции для двух последних пересчитываются под размер блока в resize
