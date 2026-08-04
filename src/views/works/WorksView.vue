@@ -84,14 +84,14 @@ onUnmounted(() => {
 
 <template>
     <div>
-        <div class="works grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-[22px]">
+        <div class="works grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] md:grid-cols-[repeat(auto-fill,minmax(380px,1fr))] gap-[22px] md:gap-6">
             <router-link v-for="({ id, name, to, media, shortDescription, tags, primaryTech }, key) in ProjectWithDescription"
                          class="
                          group
                          bg-card dark:bg-card-dark
                          border border-black/10 dark:border-white/[.14]
-                         rounded-2xl p-5
-                         flex flex-col gap-3.5
+                         rounded-2xl p-5 md:p-6
+                         flex flex-col gap-3.5 md:gap-4
                          shadow-[0_1px_2px_rgba(0,0,0,0.04)]
                          transition-all duration-300 ease-out
                          hover:-translate-y-1.5 hover:shadow-[0_18px_32px_rgba(0,0,0,0.14)] hover:border-mintline/60 dark:hover:border-mintline-dark/60
@@ -103,7 +103,7 @@ onUnmounted(() => {
                          @mouseleave="deactivateCard(id)"
                          @focusin="activateCard(id, media.length)"
                          @focusout="deactivateCard(id)">
-                <div class="card-media relative w-full h-[240px] rounded-[10px] overflow-hidden bg-imgbg dark:bg-imgbg-dark ring-1 ring-black/5 dark:ring-white/5">
+                <div class="card-media relative w-full h-[240px] md:h-[300px] rounded-[10px] overflow-hidden bg-imgbg dark:bg-imgbg-dark ring-1 ring-black/5 dark:ring-white/5">
                     <template v-for="(item, imgKey) in media" :key="imgKey">
                         <video v-if="item.type === 'video' && imgKey === currentIndex(id) && hovering[id]"
                                class="absolute inset-0 w-full h-full object-cover"
@@ -149,8 +149,8 @@ onUnmounted(() => {
                         </div>
                     </template>
                 </div>
-                <p class="text-lg font-bold font-serif tracking-tight truncate">{{ name }}</p>
-                <p class="text-sm leading-[1.55] text-soft dark:text-soft-dark flex-1 line-clamp-2">{{ shortDescription }}</p>
+                <p class="text-lg md:text-2xl font-bold font-serif tracking-tight truncate">{{ name }}</p>
+                <p class="text-sm md:text-base leading-[1.55] text-soft dark:text-soft-dark flex-1 line-clamp-2">{{ shortDescription }}</p>
                 <div v-if="tags.length" class="flex flex-wrap gap-1.5">
                     <span v-for="tag in tags"
                           :key="tag"
