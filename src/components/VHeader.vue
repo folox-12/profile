@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { computed, ref, type Component } from 'vue';
+import { computed, onBeforeUnmount, ref, watch, type Component } from 'vue';
 import { useI18n } from 'vue-i18n';
-import router, { routes } from '@/router/index';
+import { routes } from '@/router/index';
 import useChangeTheme from '@/composable/useChangeTheme';
 import { LINK_TO_GIT } from '@/constants/general';
 import { English, Russian } from '@/locales';
@@ -48,19 +48,34 @@ const changeLocale = () => {
     }
 };
 
-const menuMobileLinksClass = `
-                            hover:cursor-pointer
-                            text-2xl text-white
-                            font-bold
-                            text-white
-                            ` as const;
 const links = computed(() => routes
     .filter(({ meta }) => !meta?.isSubDirectory && meta?.as !== 'link'));
 
-const navigateTo = (path: string): void => {
+const closeMenu = () => {
     isMenuOpen.value = false;
-    router.push(path);
 };
+
+const onMenuKey = (event: KeyboardEvent) => {
+    if (event.key === 'Escape') {
+        closeMenu();
+    }
+};
+
+// Пока меню открыто, страница под ним не должна прокручиваться
+watch(isMenuOpen, (open) => {
+    document.body.style.overflow = open ? 'hidden' : '';
+
+    if (open) {
+        window.addEventListener('keydown', onMenuKey);
+    } else {
+        window.removeEventListener('keydown', onMenuKey);
+    }
+});
+
+onBeforeUnmount(() => {
+    document.body.style.overflow = '';
+    window.removeEventListener('keydown', onMenuKey);
+});
 </script>
 
 <template>
@@ -136,67 +151,98 @@ const navigateTo = (path: string): void => {
                            @keydown.enter="isMenuOpen = true"
             />
 
-            <div
-                v-if="isMenuOpen"
-                class="
-                md:hidden
-                fixed size-full top-0 left-0 z-50
-                bg-ink/90 dark:bg-bg-dark/95 backdrop-blur-sm
-                "
-            >
+            <transition name="menu">
+                <!-- Панель выезжает справа, фон под ней закрывает меню по клику -->
                 <div
-                    v-motion-slide-visible-once-right
-                    class="
-                    relative
-                    h-full
-                    flex items-center justify-center flex-col gap-1
-                    "
+                    v-if="isMenuOpen"
+                    class="md:hidden fixed inset-0 z-50"
                 >
-                    <span
-                        :class="menuMobileLinksClass"
-                        @click="navigateTo('/')"
+                    <div
+                        class="absolute inset-0 bg-ink/50 dark:bg-black/70 backdrop-blur-sm"
+                        @click="closeMenu"
+                    ></div>
+                    <nav
+                        class="
+                        menu-panel
+                        absolute top-0 right-0 h-full w-[min(320px,84vw)]
+                        flex flex-col p-5
+                        bg-bg dark:bg-bg-dark
+                        border-l border-black/10 dark:border-white/[.14]
+                        shadow-[-18px_0_40px_rgba(0,0,0,0.18)]
+                        "
                     >
-
-                        {{t('general.about')}}
-                    </span>
-                    <span
-                        v-for="(item, index) in links"
-                        :class="menuMobileLinksClass"
-                        :key="index"
-                        @click="navigateTo(item.path)"
-                    >
-                        {{ t(item.name as string) }}
-                    </span>
-                    <a target="_blank"
-                       rel="noopener noreferrer"
-                       class="flex items-center gap-1.5"
-                       :class="menuMobileLinksClass"
-                       :href="LINK_TO_GIT"
-                    >
-                        {{ t('general.source') }}
                         <VSvgComponent
-                            :icon="mdiOpenInNew"
-                            width="18px"
-                            height="18px"
-                            fill="white"
+                            class="self-end mb-4 fill-ink dark:fill-ink-dark focus-visible:ring-2 focus-visible:ring-mintline dark:focus-visible:ring-mintline-dark focus-visible:outline-none rounded-full"
+                            width="26px"
+                            height="26px"
+                            :icon="mdiClose"
+                            :aria-label="t('general.closeMenu')"
+                            role="button"
+                            tabindex="0"
+                            @click="closeMenu"
+                            @keydown.enter="closeMenu"
                         />
-                    </a>
-                    <VSvgComponent
-                        class="absolute top-2 right-2 focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none rounded-full"
-                        fill="white"
-                        :icon="mdiClose"
-                        :aria-label="t('general.closeMenu')"
-                        role="button"
-                        tabindex="0"
-                        @click="isMenuOpen = false"
-                        @keydown.enter="isMenuOpen = false"
-                    />
+                        <router-link
+                            class="router-link router-link--home menu-link"
+                            to="/"
+                            @click="closeMenu"
+                        >
+                            {{ t('general.about') }}
+                        </router-link>
+                        <router-link
+                            v-for="(item, index) in links"
+                            :key="index"
+                            class="router-link menu-link"
+                            :to="item.path"
+                            @click="closeMenu"
+                        >
+                            {{ t(item.name as string) }}
+                        </router-link>
+                        <a
+                            class="menu-link flex items-center gap-2 text-soft dark:text-soft-dark"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            :href="LINK_TO_GIT"
+                            @click="closeMenu"
+                        >
+                            {{ t('general.source') }}
+                            <VSvgComponent
+                                :icon="mdiOpenInNew"
+                                width="16px"
+                                height="16px"
+                                class="fill-soft dark:fill-soft-dark"
+                            />
+                        </a>
+                    </nav>
                 </div>
-            </div>
+            </transition>
         </div>
     </header>
 </template>
 <style>
+.menu-link {
+  padding: 12px 14px;
+  border-radius: 12px;
+  font-size: 18px;
+  font-weight: 700;
+  transition: background-color .2s ease, color .2s ease;
+}
+.menu-enter-active,
+.menu-leave-active {
+  transition: opacity .22s ease;
+}
+.menu-enter-from,
+.menu-leave-to {
+  opacity: 0;
+}
+.menu-enter-active .menu-panel,
+.menu-leave-active .menu-panel {
+  transition: transform .28s cubic-bezier(.2, .8, .2, 1);
+}
+.menu-enter-from .menu-panel,
+.menu-leave-to .menu-panel {
+  transform: translateX(100%);
+}
 .router-link {
   color: theme('colors.soft');
 }
