@@ -2,9 +2,9 @@ import type { Router } from 'vue-router';
 
 /**
  * Код сайта в GoatCounter — та часть, что стоит в адресе статистики:
- * https://<КОД>.goatcounter.com. Пока пусто, счётчик не подключается вовсе.
+ * https://<КОД>.goatcounter.com. Если пусто, счётчик не подключается вовсе.
  */
-const GOATCOUNTER_CODE = '';
+const GOATCOUNTER_CODE = 'vasilevsergey';
 
 const endpoint = () => `https://${GOATCOUNTER_CODE}.goatcounter.com/count`;
 
