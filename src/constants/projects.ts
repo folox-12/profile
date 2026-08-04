@@ -50,7 +50,7 @@ export type ProjectType = {
     details?: DetailedInfo,
 }
 
-export const PROJECT_WORKS: ProjectType[] = [
+const WORKS: ProjectType[] = [
     {
         id: 'kiosk',
         name: 'Kiosk',
@@ -107,6 +107,10 @@ export const PROJECT_WORKS: ProjectType[] = [
         }
     }
 ];
+
+// Свежие проекты выше. Сортировка живёт здесь, а не во вью: тем же порядком
+// переключаются проекты внутри карточки
+export const PROJECT_WORKS: ProjectType[] = [...WORKS].sort((a, b) => (b.year ?? 0) - (a.year ?? 0));
 
 export const getProjectWorkById = (id: string): ProjectType | undefined => {
     return PROJECT_WORKS.find(el => el.id === id);
