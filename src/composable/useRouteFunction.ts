@@ -17,6 +17,12 @@ export function useRouteFunction(title?: string) {
         updateLocale();
     });
 
+    // Компонент страницы переиспользуется при переходе между проектами,
+    // поэтому заголовок вкладки обновляем по смене маршрута, а не при монтировании
+    watch(() => routeData.fullPath, () => {
+        updateLocale();
+    });
+
     onBeforeMount(() => {
         updateLocale();
     });

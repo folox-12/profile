@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useRouteFunction } from '@/composable/useRouteFunction';
-import { computed, onMounted, onUnmounted, reactive, ref } from 'vue';
+import { computed, onMounted, onUnmounted, reactive, ref, watch } from 'vue';
+import { useRoute } from 'vue-router';
 import { getProjectWorkById, ProjectType, PROJECT_WORKS } from '@/constants/projects';
 import useTranslation from '@/composable/useTranslation';
 import { useI18n } from 'vue-i18n';
@@ -8,12 +9,14 @@ import VSvgComponent from '@/components/VSvgComponent.vue';
 import { mdiOpenInNew, mdiPlay } from '@mdi/js';
 const { t } = useI18n();
 
-const { workName } = useRouteFunction();
+useRouteFunction();
 const { getTranslatedDescription } = useTranslation();
 
-const title = computed(() => workName);
+const route = useRoute();
 
-const currentProject = ref<ProjectType | undefined>();
+// Считаем от параметра маршрута, а не разово при монтировании: при переходе
+// к соседнему проекту компонент переиспользуется и заново не монтируется
+const currentProject = computed<ProjectType | undefined>(() => getProjectWorkById(String(route.params.id)));
 
 const details = computed(() => currentProject.value?.details);
 
@@ -73,8 +76,13 @@ const onLightboxKey = (event: KeyboardEvent) => {
     }
 };
 
+// Соседний проект — своя галерея: сбрасываем просмотрщик и запущенные видео
+watch(() => route.params.id, () => {
+    closeLightbox();
+    Object.keys(playingVideo).forEach((key) => delete playingVideo[Number(key)]);
+});
+
 onMounted(() => {
-    currentProject.value = getProjectWorkById(title.value.value as string);
     window.addEventListener('keydown', onLightboxKey);
 });
 
@@ -92,7 +100,7 @@ onUnmounted(() => {
             {{ t("general.works") }}
         </router-link>
         <span class="mx-1.5 opacity-60">/</span>
-        <span class="text-ink dark:text-ink-dark font-bold">{{ currentProject?.name || title }}</span>
+        <span class="text-ink dark:text-ink-dark font-bold">{{ currentProject?.name }}</span>
     </div>
 
     <div class="flex flex-wrap items-center gap-3 mb-1.5">
