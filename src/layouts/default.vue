@@ -48,7 +48,10 @@ const detail = computed(() => onScreen.value && Boolean(route.params.id));
                  убрана намеренно: на низком окне она ужимала дисплей, хотя по
                  ширине колонки место оставалось. Ограничитель по vw бережёт
                  пропорции на узких экранах -->
-            <div class="flex justify-center shrink-0">
+            <div
+                class="flex justify-center shrink-0"
+                :class="{ 'hero-breakout': onScreen }"
+            >
                 <v-hero-model
                     :size="onScreen ? 'min(880px, 78vw)' : 300"
                     :screen-text="t('hero.role')"
@@ -73,3 +76,12 @@ const detail = computed(() => onScreen.value && Boolean(route.params.id));
         </div>
     </div>
 </template>
+
+<style scoped>
+/* В фокусе сцена выходит за колонку на всю ширину окна: колонка обрезала бы
+   дисплей, а он и есть содержимое страницы */
+.hero-breakout {
+    width: 100vw;
+    margin-left: calc(50% - 50vw);
+}
+</style>

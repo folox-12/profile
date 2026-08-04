@@ -98,9 +98,10 @@ const CAMERA_IDLE = { y: 0.35, z: 5.4, look: 0 };
 const CAMERA_FOCUS = { y: SCREEN_CENTER_Y, z: 2.4, look: SCREEN_CENTER_Y };
 const CAMERA_DETAIL = { y: SCREEN_CENTER_Y, z: 1.95, look: SCREEN_CENTER_Y };
 
-// Экран как DOM. Ширина макета близка к реальному размеру дисплея на экране:
-// сильное расхождение либо мылит текст, либо делает содержимое мелким
-const SCREEN_DOM_W = 1050;
+// Экран как DOM. Ширина макета подгоняется под фактический размер дисплея на
+// экране, чтобы слой не приходилось ни растягивать, ни ужимать
+const SCREEN_DOM_MIN = 820;
+const SCREEN_DOM_MAX = 1600;
 
 // Тайминги интро в мс от старта сцены
 const LID_OPEN_FROM = 150;
@@ -212,6 +213,22 @@ const drawScreen = (chars: number, caret: boolean) => {
     }
 
     screenTexture.needsUpdate = true;
+};
+
+/** Подгоняет вёрстку на экране под его реальный размер: один DOM-пиксель к одному экранному */
+const applyScreenDomSize = () => {
+    if (!screenSlot.value || !screenObject || !camera) {
+        return;
+    }
+
+    const distance = props.detail ? CAMERA_DETAIL.z : CAMERA_FOCUS.z;
+    const pixelsPerUnit = (stage.value?.clientHeight ?? 0) / (2 * distance * FOV_TAN);
+    const width = Math.min(Math.max(Math.round(SCREEN_VIEW_W * pixelsPerUnit), SCREEN_DOM_MIN), SCREEN_DOM_MAX);
+
+    screenSlot.value.style.width = `${width}px`;
+    screenSlot.value.style.height = `${Math.round(width * (SCREEN_VIEW_H / SCREEN_VIEW_W))}px`;
+    // Модель масштабируется группой, поэтому в объект идёт размер до этого масштаба
+    screenObject.scale.setScalar(SCREEN_VIEW_W / MODEL_SCALE / width);
 };
 
 const redrawScreen = () => {
@@ -390,12 +407,9 @@ const buildLaptop = () => {
 
     // Тот же прямоугольник, но из DOM: CSS3D кладёт настоящую вёрстку в плоскость экрана
     if (screenSlot.value) {
-        screenSlot.value.style.width = `${SCREEN_DOM_W}px`;
-        screenSlot.value.style.height = `${Math.round(SCREEN_DOM_W * (screenHeight / screenWidth))}px`;
-
         screenObject = new CSS3DObject(screenSlot.value);
         screenObject.position.set(0, lidHeight / 2, 0.004);
-        screenObject.scale.setScalar(screenWidth / SCREEN_DOM_W);
+        applyScreenDomSize();
         screenObject.visible = false;
         hinge.add(screenObject);
     }
@@ -486,6 +500,8 @@ const resize = () => {
 
     CAMERA_FOCUS.z = Math.max(byWidth, byHeight) * SCREEN_FIT_MARGIN;
     CAMERA_DETAIL.z = Math.min(byWidth, byHeight);
+
+    applyScreenDomSize();
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(clientWidth, clientHeight, false);
     cssRenderer?.setSize(clientWidth, clientHeight);
@@ -855,6 +871,7 @@ watch(isDark, applyPalette);
 watch(() => [props.screenText, props.screenUser], redrawScreen);
 watch(() => props.detail, () => {
     drawnProgress = -1;
+    applyScreenDomSize();
 });
 </script>
 
