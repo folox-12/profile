@@ -80,25 +80,22 @@ const FACE_ROTATION_Y = 0;
 const FOCUS_EASING = 2.6;
 
 const MODEL_SCALE = 1.3;
-// Центры, в которые целится камера: середина сложенной панели и середина дисплея
-const MODEL_CENTER_Y = 0.62;
+// Центр дисплея — в него целится камера в обоих приближенных состояниях
 const SCREEN_CENTER_Y = 0.664;
 
 const FOV = 45;
 const FOV_TAN = Math.tan((FOV / 2) * Math.PI / 180);
 
-// Габариты в мировых единицах: сложенная панель целиком и один дисплей
-const PANEL_VIEW_W = LAPTOP_WIDTH * MODEL_SCALE;
-const PANEL_VIEW_H = 1.494 * MODEL_SCALE;
+// Габариты дисплея в мировых единицах
 const SCREEN_VIEW_W = LAPTOP_WIDTH * 0.94 * MODEL_SCALE;
 const SCREEN_VIEW_H = LID_HEIGHT * 0.9 * MODEL_SCALE;
-// Доля кадра, которую занимает панель в фокусе
-const PANEL_FILL = 0.97;
+// Небольшой запас, чтобы по краям дисплея осталась полоска рамки
+const SCREEN_FIT_MARGIN = 1.03;
 
 // Камера в трёх состояниях: обычное, вся панель и вплотную к дисплею.
 // Дистанции для двух последних пересчитываются под размер блока в resize
 const CAMERA_IDLE = { y: 0.35, z: 5.4, look: 0 };
-const CAMERA_FOCUS = { y: MODEL_CENTER_Y, z: 2.4, look: MODEL_CENTER_Y };
+const CAMERA_FOCUS = { y: SCREEN_CENTER_Y, z: 2.4, look: SCREEN_CENTER_Y };
 const CAMERA_DETAIL = { y: SCREEN_CENTER_Y, z: 1.95, look: SCREEN_CENTER_Y };
 
 // Экран как DOM. Ширина макета близка к реальному размеру дисплея на экране:
@@ -481,17 +478,14 @@ const resize = () => {
     camera.aspect = clientWidth / clientHeight;
     camera.updateProjectionMatrix();
 
-    // Панель вписываем в кадр по узкой стороне, дисплей — наоборот, растягиваем
-    // до перекрытия кадра. Так обе дистанции держатся любых пропорций блока
-    const distance = (width: number, height: number) => ({
-        byWidth: width / (2 * FOV_TAN * camera.aspect),
-        byHeight: height / (2 * FOV_TAN)
-    });
-    const panel = distance(PANEL_VIEW_W / PANEL_FILL, PANEL_VIEW_H / PANEL_FILL);
-    const display = distance(SCREEN_VIEW_W, SCREEN_VIEW_H);
+    // Считаем по дисплею, а не по корпусу: именно он должен быть максимально
+    // крупным. На витрине дисплей целиком в кадре с полоской рамки по краям,
+    // на карточке — перекрывает кадр, и рамки не видно вовсе
+    const byWidth = SCREEN_VIEW_W / (2 * FOV_TAN * camera.aspect);
+    const byHeight = SCREEN_VIEW_H / (2 * FOV_TAN);
 
-    CAMERA_FOCUS.z = Math.max(panel.byWidth, panel.byHeight);
-    CAMERA_DETAIL.z = Math.min(display.byWidth, display.byHeight);
+    CAMERA_FOCUS.z = Math.max(byWidth, byHeight) * SCREEN_FIT_MARGIN;
+    CAMERA_DETAIL.z = Math.min(byWidth, byHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(clientWidth, clientHeight, false);
     cssRenderer?.setSize(clientWidth, clientHeight);

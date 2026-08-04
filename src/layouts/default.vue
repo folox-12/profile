@@ -49,7 +49,7 @@ const detail = computed(() => onScreen.value && Boolean(route.params.id));
                  Ограничители не дают панели вылезти из колонки и из окна -->
             <div class="flex justify-center shrink-0">
                 <v-hero-model
-                    :size="onScreen ? 'min(800px, 82vh, 72vw)' : 300"
+                    :size="onScreen ? 'min(860px, 88vh, 74vw)' : 300"
                     :screen-text="t('hero.role')"
                     :focused="onScreen"
                     :detail="detail"
