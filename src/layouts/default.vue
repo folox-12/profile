@@ -54,7 +54,7 @@ const detail = computed(() => onScreen.value && Boolean(route.params.id));
                 :class="{ 'hero-breakout': onScreen }"
             >
                 <v-hero-model
-                    :size="onScreen ? 'min(880px, 78vw)' : 300"
+                    :size="onScreen ? 'min(880px, 78vw)' : 340"
                     :screen-text="t('hero.role')"
                     :focused="onScreen"
                     :detail="detail"

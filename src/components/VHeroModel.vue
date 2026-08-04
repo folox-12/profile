@@ -94,7 +94,7 @@ const SCREEN_FIT_MARGIN = 1.02;
 
 // Камера в трёх состояниях: обычное, вся панель и вплотную к дисплею.
 // Дистанции для двух последних пересчитываются под размер блока в resize
-const CAMERA_IDLE = { y: 0.35, z: 5.4, look: 0 };
+const CAMERA_IDLE = { y: 0.35, z: 6, look: 0 };
 const CAMERA_FOCUS = { y: SCREEN_CENTER_Y, z: 2.4, look: SCREEN_CENTER_Y };
 const CAMERA_DETAIL = { y: SCREEN_CENTER_Y, z: 1.95, look: SCREEN_CENTER_Y };
 
@@ -157,6 +157,7 @@ let screenIsOn = false;
 let spinAngle = 0;
 let faceOffset = 0;
 let baseRotationX = BASE_ROTATION_X;
+let baseRotationY = BASE_ROTATION_Y;
 const cameraState = { ...CAMERA_IDLE };
 let boostAngle = 0;
 let boostStartedAt = 0;
@@ -687,6 +688,9 @@ const animate = () => {
     camera.lookAt(0, cameraState.look, 0);
 
     baseRotationX += ((focused ? FACE_ROTATION_X : BASE_ROTATION_X) - baseRotationX) * ease;
+    // Во время загрузки ноутбук смотрит прямо; разворот в три четверти
+    // набирается уже в полёте на своё место
+    baseRotationY += ((phase.value === 'loading' ? 0 : BASE_ROTATION_Y) - baseRotationY) * ease;
 
     if (hinge && phase.value === 'done') {
         const lidTarget = focused ? LID_FOCUS : LID_OPEN;
@@ -704,13 +708,13 @@ const animate = () => {
 
     if (focused && !isDragging.value) {
         // Доворачиваем к «лицу» по кратчайшей дуге, не трогая накопленные обороты
-        const current = BASE_ROTATION_Y + spinAngle + boostAngle + dragged.y + faceOffset;
+        const current = baseRotationY + spinAngle + boostAngle + dragged.y + faceOffset;
 
         faceOffset += wrapAngle(FACE_ROTATION_Y - current) * ease;
     }
 
     laptop.rotation.x = baseRotationX + dragged.x;
-    laptop.rotation.y = BASE_ROTATION_Y + spinAngle + boostAngle + dragged.y + faceOffset;
+    laptop.rotation.y = baseRotationY + spinAngle + boostAngle + dragged.y + faceOffset;
 
     const bob = prefersReducedMotion ? 0 : Math.sin(now / 1250) * 0.06 * (focused ? 0.12 : 1);
 
@@ -798,6 +802,7 @@ onMounted(() => {
 
     if (props.intro && !prefersReducedMotion) {
         phase.value = 'loading';
+        baseRotationY = 0;
         introStartedAt = performance.now();
         setupIntroStage();
     } else {
