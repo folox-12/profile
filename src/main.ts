@@ -3,6 +3,7 @@ import App from './App.vue';
 import router from './router';
 import './css/index.css';
 import { MotionPlugin } from '@vueuse/motion';
+import { useAnalytics } from '@/composable/useAnalytics';
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
@@ -21,6 +22,8 @@ const i18n = createI18n({
         ...languages
     }
 });
+
+useAnalytics(router);
 
 createApp(App)
     .use(router)
